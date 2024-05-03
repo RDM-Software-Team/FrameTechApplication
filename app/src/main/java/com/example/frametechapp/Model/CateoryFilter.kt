@@ -9,7 +9,7 @@ class CateoryFilter {
     val favList = listOf(
         items(
             itemId = 1090,
-            itemName = "",
+            itemName = "kl",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -20,7 +20,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 4321,
-            itemName = "",
+            itemName = "bnm,",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -31,7 +31,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 9086,
-            itemName = "",
+            itemName = "hjklp",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -42,7 +42,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 1237,
-            itemName = "",
+            itemName = "jklp",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -53,7 +53,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 7908,
-            itemName = "",
+            itemName = "hjkl;[",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -78,7 +78,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 9800,
-            itemName = "",
+            itemName = "hjkop",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -89,7 +89,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 9878,
-            itemName = "",
+            itemName = "bjkl;'",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -100,7 +100,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 2512,
-            itemName = "",
+            itemName = "hjiop",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -111,7 +111,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 9876,
-            itemName = "",
+            itemName = "hjkop[",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -125,7 +125,7 @@ class CateoryFilter {
     val unBroghtItems = listOf(
         items(
             itemId = 8865,
-            itemName = "",
+            itemName = "hjiop[",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -136,7 +136,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 2589,
-            itemName = "",
+            itemName = "bhjkop[]",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -147,7 +147,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 9976,
-            itemName = "",
+            itemName = "hjkl",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -158,7 +158,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 2467,
-            itemName = "",
+            itemName = "jkl;",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -169,7 +169,7 @@ class CateoryFilter {
         ),
         items(
             itemId = 6878,
-            itemName = "",
+            itemName = "fsassdfdsa",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
@@ -182,18 +182,17 @@ class CateoryFilter {
     //The following methods/Function will be used to filter through data to create categories in the homepage and etc.
     //Looks for the Favourite items brought the most and favoured by the customers.
     fun FavouriteItems():List<items>{// The data will be taken from the database , (from 02/05/2024 to 17/05/2024 will be taken from memory)
-        return emptyList<items>();
-
+        return favList;
     }
     //Looks for the New Items added the system.
     fun NewArrives():List<items>{
 
-        return emptyList<items>();
+        return newItemList;
     }
     //Looks for item that are not as  brought as the rest to try push them to the customers.
     fun UnBroughtItems():List<items>{
 
-        return emptyList<items>();
+        return unBroghtItems;
     }
 
 }
