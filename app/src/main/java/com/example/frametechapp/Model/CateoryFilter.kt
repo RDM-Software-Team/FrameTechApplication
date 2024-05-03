@@ -182,8 +182,8 @@ class CateoryFilter {
     //The following methods/Function will be used to filter through data to create categories in the homepage and etc.
     //Looks for the Favourite items brought the most and favoured by the customers.
     fun FavouriteItems():List<items>{// The data will be taken from the database , (from 02/05/2024 to 17/05/2024 will be taken from memory)
-
         return emptyList<items>();
+
     }
     //Looks for the New Items added the system.
     fun NewArrives():List<items>{
