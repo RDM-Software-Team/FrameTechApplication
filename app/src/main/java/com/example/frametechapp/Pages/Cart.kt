@@ -63,7 +63,7 @@ fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
  val context = LocalContext.current
  val columnNames = listOf("Item Name", "Quantity", "Price","SubTotal" ,"Delete")
  val quantity = remember { mutableStateOf<Int>(1) }
- val itemPrices = remember { mutableStateOf<Double>(0.0) }
+ val itemPrices = remember { mutableStateOf<List<Double>>(emptyList()) }
   Column(
     modifier = Modifier.fillMaxSize()
   ) {
@@ -128,19 +128,23 @@ fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
                       Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                   }
             }
-         itemPrices.value += item.itemPrice
+         itemPrices.value += listOf(item.itemPrice)
 
      }
     }
-   checkout(item = itemPrices.value, quantity = quantity.value)
+   Checkout(item = itemPrices.value, quantity = quantity.value)
 
   }
 }
 @Composable
-fun checkout(item:Double, quantity:Int){
+fun Checkout(item:List<Double>, quantity:Int){
     val totalAmount = remember { mutableStateOf(0.0) }
     LaunchedEffect(item, quantity) {
-        totalAmount.value = item * quantity
+        var total = 0.0
+        for (i in item.indices) {
+            total += item[i] * quantity
+        }
+        totalAmount.value = total
     }
 
 

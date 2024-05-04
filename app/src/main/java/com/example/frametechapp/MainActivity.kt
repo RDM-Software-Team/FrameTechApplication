@@ -87,7 +87,7 @@ fun HomeBase(){
                         Homepage()
                     }
                     composable("cart") {
-                        Cart()
+                        Cart(context)
                     }
                     composable("profile") {
                         Profile()
