@@ -71,7 +71,7 @@ class CateoryFilter {
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 2094.90,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}

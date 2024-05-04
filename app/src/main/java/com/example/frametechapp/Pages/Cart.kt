@@ -1,6 +1,5 @@
 package com.example.frame_tech_app.Pages
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -22,20 +21,27 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.times
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import com.example.frametech_app.Data.items
 import com.example.frametechapp.Model.CateoryFilter
+import kotlin.time.times
+
 @Preview(showBackground = true)
 @Composable
 fun Cart(){
@@ -56,8 +62,8 @@ fun Cart(){
 fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
  val context = LocalContext.current
  val columnNames = listOf("Item Name", "Quantity", "Price","SubTotal" ,"Delete")
- var isDelete = remember { mutableStateOf(false) }
- var quantity = remember { mutableStateOf(1) }
+ val quantity = remember { mutableStateOf<Int>(1) }
+ val itemPrices = remember { mutableStateOf<Double>(0.0) }
   Column(
     modifier = Modifier.fillMaxSize()
   ) {
@@ -74,59 +80,72 @@ fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
    //The is the Row Section of the table
     LazyColumn{
      items(cartItems) { item ->
-      Row(
-       modifier = Modifier
-        .fillMaxWidth()
-        .padding(7.dp)
-        .align(Alignment.CenterHorizontally)
-       ,
-       horizontalArrangement = Arrangement.SpaceBetween,
-       verticalAlignment = Alignment.CenterVertically
-      ) {
-       Text(text = item.itemName,modifier = Modifier
-        .border(1.dp, Color.Black)
-        .width(80.dp)
-        .fillMaxHeight())
-       OutlinedTextField(
-        value = "${quantity.value}",
-        onValueChange = { quantity.value = it.toInt() },
-        modifier = Modifier
-         .padding(16.dp)
-         .width(50.dp),
-        textStyle = TextStyle(fontSize = 12.sp)
-       )
-       Text(
-        text = "R."+item.itemPrice.toString()
-        , modifier = Modifier
-         .border(1.dp, Color.Black)
-         .width(80.dp)
-         .fillMaxHeight()
-       )
-       Text(
-        text = "R." + (item.itemPrice * quantity.value).toString(),
-         modifier = Modifier
-          .border(1.dp, Color.Black)
-          .width(80.dp)
-          .fillMaxHeight()
-       )
-       IconButton(onClick = {
-        onDelete(item.itemId)
-        Toast.makeText(context, "${item.itemId} + ${item.itemName}", Toast.LENGTH_SHORT).show()
-       },
-        modifier = Modifier
-         .padding(5.dp)
-         .width(80.dp)
-         .height(30.dp),
-        ) {
-         Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-         }
+         Row(
+          modifier = Modifier
+           .fillMaxWidth()
+           .padding(7.dp)
+           .align(Alignment.CenterHorizontally)
+          ,
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+         ) {
+                  Text(
+                       text = item.itemName,modifier = Modifier
+                    .border(1.dp, Color.Black)
+                    .width(80.dp)
+                    .fillMaxHeight())
+                  OutlinedTextField(
+                       value = "${quantity.value}",
+                       onValueChange = { quantity.value = it.toInt() },
+                        modifier = Modifier
+                          .padding(16.dp)
+                          .width(50.dp),
+                       textStyle = TextStyle(fontSize = 12.sp)
+                  )
+                  Text(
+                       text = "R."+item.itemPrice.toString()
+                       , modifier = Modifier
+                       .border(1.dp, Color.Black)
+                       .width(80.dp)
+                       .fillMaxHeight()
+                  )
+                  Text(
+                   text = "R." + (item.itemPrice * quantity.value).toString(),
+                   modifier = Modifier
+                      .border(1.dp, Color.Black)
+                      .width(80.dp)
+                      .fillMaxHeight()
+                  )
+                  IconButton(onClick = {
+                         onDelete(item.itemId)
+                         Toast.makeText(context, "${item.itemId} + ${item.itemName}", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier
+                      .padding(5.dp)
+                      .width(80.dp)
+                      .height(30.dp),
+                  ) {
+                      Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                  }
+            }
+         itemPrices.value += item.itemPrice
 
-             }
-         }
-      }
-   }
+     }
+    }
+   checkout(item = itemPrices.value, quantity = quantity.value)
+
+  }
 }
+@Composable
+fun checkout(item:Double, quantity:Int){
+    val totalAmount = remember { mutableStateOf(0.0) }
+    LaunchedEffect(item, quantity) {
+        totalAmount.value = item * quantity
+    }
 
-fun checkout(){
 
+    Text(
+        text = "Total Amount: R.${totalAmount.value}",
+        modifier = Modifier.padding(10.dp).fillMaxWidth().border(1.dp, Color.Yellow)
+    )
 }
