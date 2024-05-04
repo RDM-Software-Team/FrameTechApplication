@@ -6,7 +6,7 @@ data class profileData(//changed val to var this data will be updated by the use
     var customerId: String,
     var firstname: String,
     var lastname: String,
-    var cellNumber: Number,
+    var cellNumber: String,
     var dob: String,
     var email:String,
     var address:String,
