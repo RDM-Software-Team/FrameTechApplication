@@ -52,19 +52,23 @@ val userProfile = listOf(//preview Data to use in the app
         "cus_8391",
         "Ronewa",
         "Maselesele",
-        167182930,
+        "0671829305",
         "12/23/2023",
         "www.sdfadvsofijsdv@gmail.com",
         "12 street,Soweto,Gauteng",
         "Male"
     )
 )
+var changedProfile = listOf<profileData>()
 @Preview(showBackground = true)
 @Composable
 fun Profile(){
     //Text(text = "Profile")
     getProfileData(userProfile)
-    ProfileFrame()
+    ProfileFrame(getProfileData(userProfile))
+    getProfileData(changedProfile).forEach {
+        Text(it.firstname)
+    }
 
 
 }
@@ -73,19 +77,29 @@ fun getProfileData(data:List<profileData>):List<profileData>{//this function wil
 }
 
 @Composable
-fun ProfileFrame(profile:List<profileData> = getProfileData(userProfile)){
+fun ProfileFrame(profile:List<profileData>){
     val context = LocalContext.current
     val isEnable = remember { mutableStateOf(false)}//this variable will be used to enable and disable the text fields
+    var firstname by remember { mutableStateOf("") }
+    var lastname by remember { mutableStateOf("") }
+    var dob by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var cellNumber by remember { mutableStateOf("") }
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }//This will be storing the uri for the image chosen from the device gallery
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         imageUri = uri //this set the uri to the imageUri
     }
+
+    val currentProfile = remember { mutableStateOf(profile) }
+
     Column {
         LazyRow(modifier = Modifier
             .fillMaxWidth()
         ) {
-            items(profile) { user ->
+            items(currentProfile.value) { user ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -136,57 +150,105 @@ fun ProfileFrame(profile:List<profileData> = getProfileData(userProfile)){
             }
         }
         LazyColumn{
-            items(profile) { user ->
+            items(currentProfile.value) { user ->
                 OutlinedTextField(
-                    value = user.firstname,
-                    onValueChange = {user.firstname =  it},
-                    label = { Text(text = "Enter Firstname")},
+                    value = if (!isEnable.value) user.firstname else firstname,
+                    onValueChange = {
+                        if(isEnable.value) firstname = it else user.firstname = it
+                    },
+                    label = { Text(text = "Enter Firstname") },
                     enabled = isEnable.value
                 )
 
                 OutlinedTextField(
-                    value = user.lastname,
-                    onValueChange = { user.lastname = it},
+                    value = if (!isEnable.value) user.lastname else lastname,
+                    onValueChange = {
+                        if(isEnable.value) lastname = it else user.lastname = it
+                    },
                     label = { Text(text = "Enter Lastname")},
                     enabled = isEnable.value
                 )
 
                 OutlinedTextField(
-                    value = user.dob,
-                    onValueChange = { user.dob = it},
+                    value = if (!isEnable.value) user.dob else dob,
+                    onValueChange = {
+                        if(isEnable.value) dob = it else user.dob = it
+                    },
                     label = { Text(text = "Enter dob")},
                     enabled = isEnable.value
                 )
 
                 OutlinedTextField(
-                    value = user.email,
-                    onValueChange = { user.email=it},
+                    value = if (!isEnable.value) user.email else email,
+                    onValueChange = {
+                        if(isEnable.value) email = it else user.email = it
+                    },
                     label = { Text(text = "Enter Email")},
                     enabled = isEnable.value
                 )
 
                 OutlinedTextField(
-                    value = user.gender,
-                    onValueChange = { user.gender=it},
+                    value = if (!isEnable.value) user.gender else gender,
+                    onValueChange = {
+                        if(isEnable.value) gender = it else user.gender = it
+                    },
                     label = { Text(text = "Enter Gender")},
                     enabled = isEnable.value
                 )
 
                 OutlinedTextField(
-                    value = user.address,
-                    onValueChange = { user.address =it},
+                    value = if (!isEnable.value) user.address else address,
+                    onValueChange = {
+                        if(isEnable.value) address = it else user.address = it
+                    },
                     label = { Text(text = "Enter Address")},
                     enabled = isEnable.value
                 )
 
                 OutlinedTextField(
-                    value = "${user.cellNumber}",
-                    onValueChange = { user.cellNumber = it.toInt()},
+                    value = if (!isEnable.value) user.cellNumber else cellNumber,
+                    onValueChange = {
+                        if(isEnable.value) cellNumber = it else user.cellNumber = it
+                    },
                     label = { Text(text = "Enter PhoneNumber")},
                     enabled = isEnable.value
                 )
                 Button(onClick = {
+
+                       // updateUserProfile(user.customerId,firstname,lastname,cellNumber,dob,imageUri,email,address,gender)//This function will be used to update the user profile.
+                    // Capture the updated profile list returned from updateUserProfile function
+                    if(firstname.isEmpty() || lastname.isEmpty() || cellNumber.isEmpty() || dob.isEmpty() || email.isEmpty() || address.isEmpty() || gender.isEmpty()){
+                        currentProfile.value = updateUserProfile(
+                            user.customerId,
+                            user.firstname,
+                            user.lastname,
+                            user.cellNumber,
+                            user.dob,
+                            user.profileImage,
+                            user.email,
+                            user.address,
+                            user.gender
+                        )//If no changes are made to the profile, do not update it
+                    }else{
+                    currentProfile.value = updateUserProfile(
+                        user.customerId,
+                        firstname,
+                        lastname,
+                        cellNumber,
+                        dob,
+                        imageUri,
+                        email,
+                        address,
+                        gender
+                    )
+                    }
+
+                    // Update the profile variable with the updated profile list
+                    //currentProfile.value = updatedProfileList
+                    //changedProfile = updatedProfileList//Global access to the updated profile list
                     Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
+
+
                     isEnable.value = false
                 },
                     enabled = isEnable.value,
@@ -204,42 +266,31 @@ fun ProfileFrame(profile:List<profileData> = getProfileData(userProfile)){
         }
     }
 }
-
-@Composable
-fun imagePicker(): Uri? {
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        imageUri = uri
-    }
-
-    //Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-     //   if (imageUri != null) {
-     //       Image(painter = rememberImagePainter(imageUri), contentDescription = null, modifier = Modifier.fillMaxSize())
-     //   } else {
-     //       Button(onClick = { launcher.launch("image/*") }) {
-     //           Text(text = "Pick Image")
-     //       }
-     //   }
-     // }
-    if (imageUri != null) {
-        //Toast.makeText(LocalContext.current, "Image Selected", Toast.LENGTH_SHORT).show()
-              Image(painter = rememberImagePainter(imageUri), contentDescription = null, modifier = Modifier.fillMaxSize())
-              } else {
-               Button(onClick = { launcher.launch("image/*") }) {
-                Text(text = "Pick Image")
-               }
-          }
-    //launcher.launch("image/*")
-    return  imageUri
-
-}
-@Composable
-fun OtherComposable(launcher: ActivityResultLauncher<String>) {
-    Button(
-        onClick = {
-            launcher.launch("image/*")
+fun updateUserProfile(//This function will be used to update the user profile
+    userId: String,
+    newFirstName: String? = null,
+    newLastName: String? = null,
+    newPhoneNumber: String? = null,
+    newDob: String? = null,
+    newImage: Uri? = null,
+    newEmail: String? = null,
+    newAddress: String? = null,
+    newGender: String? = null
+): List<profileData> {
+    return userProfile.map { profile ->
+        if (profile.customerId == userId) {
+            profile.copy(
+                firstname = newFirstName ?: profile.firstname,
+                lastname = newLastName ?: profile.lastname,
+                cellNumber = newPhoneNumber ?: profile.cellNumber,
+                email = newEmail ?: profile.email,
+                dob = newDob ?: profile.dob,
+                profileImage = newImage ?: profile.profileImage,
+                address = newAddress ?: profile.address,
+                gender = newGender ?: profile.gender
+            )
+        } else {
+            profile
         }
-    ){
-
     }
 }
