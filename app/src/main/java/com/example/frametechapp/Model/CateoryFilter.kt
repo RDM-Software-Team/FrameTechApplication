@@ -67,7 +67,7 @@ class CateoryFilter {
     val newItemList = listOf(
         items(
             itemId = 2589,
-            itemName = "",
+            itemName = "dfghu",
             itemPhotos = emptyList(),
             itemDescription = emptyList(),
             itemCategory = "",
