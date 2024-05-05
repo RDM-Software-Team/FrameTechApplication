@@ -81,7 +81,7 @@ fun MainFrame(){
     onValueChange = { searchValue.value = it },
     leadingIcon = {
      IconButton(onClick = {}) {
-      Icon(Icons.Filled.Search, contentDescription = "Icon")
+      Icon(Icons.Filled.Search, contentDescription = "Icon")//Need to make a working search function/action..
      }
     },
     maxLines = 2,
