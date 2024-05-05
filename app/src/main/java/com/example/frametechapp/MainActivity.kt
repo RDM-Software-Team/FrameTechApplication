@@ -3,12 +3,10 @@ package com.example.frametechapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,15 +23,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.frame_tech_app.Pages.Cart
-import com.example.frame_tech_app.Pages.Homepage
+import com.example.frametechapp.Pages.Cart
+import com.example.frametechapp.Pages.Homepage
 import com.example.frametechapp.Pages.Profile
 import com.example.frametechapp.ui.theme.FrameTechAppTheme
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
-import com.example.frame_tech_app.Pages.About
-import com.example.frame_tech_app.Pages.ProductPage
+import com.example.frametechapp.Pages.About
+import com.example.frametechapp.Pages.ProductPage
 import com.example.frame_tech_app.Pages.ServicePage
 import kotlinx.coroutines.launch
 

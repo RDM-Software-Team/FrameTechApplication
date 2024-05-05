@@ -1,4 +1,4 @@
-package com.example.frame_tech_app.Pages
+package com.example.frametechapp.Pages
 
 import android.widget.Toast
 import androidx.compose.foundation.border
@@ -33,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.times
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -41,10 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import com.example.frametech_app.Data.items
-import com.example.frametechapp.Model.CateoryFilter
-import kotlin.time.times
+import com.example.frametechapp.Model.CategoryFilter
 
 @Preview(showBackground = true)
 @Composable
@@ -55,7 +52,7 @@ fun Cart(){
   verticalArrangement = Arrangement.Center
  ) {
   Text(text = "Cart")
-  val listGetters = CateoryFilter()
+  val listGetters = CategoryFilter()
   var CartList by remember {mutableStateOf(listGetters.newItemList)}
   CartTable(cartItems = CartList) { itemId ->//this is the delete function
    CartList = CartList.filter { it.itemId != itemId }
