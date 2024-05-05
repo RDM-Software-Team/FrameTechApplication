@@ -164,56 +164,134 @@ fun ProductView() {
                 }
             }
         }
-    }
-
-    /*LazyRow(
-     modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        /*items(group) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(5.dp)
-                    .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
-                    .clip(RoundedCornerShape(12.dp)),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.Start
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.dell_latitude_5430),
-                    contentDescription = it.itemName,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(
-                    text = it.itemName,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight(700),
-                )
-                Text(text = "R. ${it.itemPrice}")
-                OutlinedButton(
-                    onClick = { /*TODO*/ },
-                    shape = RectangleShape,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-                        .width(290.dp),
-                    colors = ButtonColors(
-                        containerColor = Color.Magenta,
-                        contentColor = Color.White,
-                        disabledContentColor = Color.LightGray,
-                        disabledContainerColor = Color.LightGray
-                    )
-                ) {
-                    Text(text = "View")
-                }
-            }
-            Spacer(modifier = Modifier.padding(10.dp))
-
-        }
-        item(1) {
-            Button(onClick = { /*TODO*/ }) {
-                Text(text = "View More..")
-            }
-        }*/
-    }*/
+    }//This is the improved but not the final version which displays the product in a row but not based by their category
 }
+
+/***
+ * //This is for displaying products depend on they own category but it displays it in a Column and not a Row
+ *
+ * @Composable
+ * fun ProductView() {
+ *     val context = LocalContext.current
+ *     val get = CategoryFilter()
+ *
+ *     val groupLists = remember {
+ *         mutableStateOf(listOf<List<items>>(get.favList,get.newItemList,get.unBroghtItems))
+ *     }//This collects all List<items> in the system.
+ *
+ *
+ *         LazyColumn(
+ *             modifier = Modifier
+ *                 .height(2500.dp)
+ *                 .fillMaxWidth()
+ *         ) {
+ *             items(groupLists.value) {
+ *
+ *                 it.forEach { product->
+ *
+ *                     if(product.itemCategory == ""){
+ *                         val lists = listOf(product.copy())
+ *                         LazyRow(
+ *                             modifier = Modifier.fillMaxWidth(),
+ *                             verticalAlignment = Alignment.CenterVertically
+ *                         ) {
+ *                             items(lists){ pro ->
+ *                                 Column(
+ *                                     modifier = Modifier
+ *                                         .fillMaxWidth()
+ *                                         .padding(5.dp)
+ *                                         .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
+ *                                         .clip(RoundedCornerShape(12.dp)),
+ *                                     verticalArrangement = Arrangement.Center,
+ *                                     horizontalAlignment = Alignment.Start
+ *                                 ) {
+ *                                     Image(
+ *                                         painter = painterResource(R.drawable.dell_latitude_5430),
+ *                                         contentDescription = pro.itemName,
+ *                                         modifier = Modifier.width(290.dp)
+ *                                     )
+ *                                     Text(
+ *                                         text = pro.itemName,
+ *                                         fontSize = 20.sp,
+ *                                         fontWeight = FontWeight(700),
+ *                                     )
+ *                                     Text(text = "R. ${pro.itemPrice}")
+ *                                     OutlinedButton(
+ *                                         onClick = { /*TODO*/ },
+ *                                         shape = RectangleShape,
+ *                                         modifier = Modifier
+ *                                             .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+ *                                             .width(290.dp),
+ *                                         colors = ButtonColors(
+ *                                             containerColor = Color.Magenta,
+ *                                             contentColor = Color.White,
+ *                                             disabledContentColor = Color.LightGray,
+ *                                             disabledContainerColor = Color.LightGray
+ *                                         )
+ *                                     ) {
+ *                                         Text(text = "View")
+ *                                     }
+ *                                 }
+ *                                 Spacer(modifier = Modifier.padding(10.dp))
+ *
+ *                             }
+ *                         }
+ *                     }
+ *                 }
+ *             }
+ *         }
+ *
+ *     LazyRow(
+ *      modifier = Modifier.fillMaxWidth(),
+ *         verticalAlignment = Alignment.CenterVertically
+ *     ) {
+ *         /*items(group) {
+ *             Column(
+ *                 modifier = Modifier
+ *                     .fillMaxSize()
+ *                     .padding(5.dp)
+ *                     .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
+ *                     .clip(RoundedCornerShape(12.dp)),
+ *                 verticalArrangement = Arrangement.Center,
+ *                 horizontalAlignment = Alignment.Start
+ *             ) {
+ *                 Image(
+ *                     painter = painterResource(R.drawable.dell_latitude_5430),
+ *                     contentDescription = it.itemName,
+ *                     modifier = Modifier.fillMaxWidth()
+ *                 )
+ *                 Text(
+ *                     text = it.itemName,
+ *                     fontSize = 20.sp,
+ *                     fontWeight = FontWeight(700),
+ *                 )
+ *                 Text(text = "R. ${it.itemPrice}")
+ *                 OutlinedButton(
+ *                     onClick = { /*TODO*/ },
+ *                     shape = RectangleShape,
+ *                     modifier = Modifier
+ *                         .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+ *                         .width(290.dp),
+ *                     colors = ButtonColors(
+ *                         containerColor = Color.Magenta,
+ *                         contentColor = Color.White,
+ *                         disabledContentColor = Color.LightGray,
+ *                         disabledContainerColor = Color.LightGray
+ *                     )
+ *                 ) {
+ *                     Text(text = "View")
+ *                 }
+ *             }
+ *             Spacer(modifier = Modifier.padding(10.dp))
+ *
+ *         }
+ *         item(1) {
+ *             Button(onClick = { /*TODO*/ }) {
+ *                 Text(text = "View More..")
+ *             }
+ *         }*/
+ *     }
+ * }
+ *
+ *
+ */
