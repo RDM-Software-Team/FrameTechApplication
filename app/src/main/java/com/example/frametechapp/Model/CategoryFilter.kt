@@ -4,9 +4,9 @@ import com.example.frametech_app.Data.items
 import java.sql.Timestamp
 
 
-class CateoryFilter {
+class CategoryFilter {
     //Lists that will be containing items for the three category
-    val favList = listOf(
+    var favList = listOf(
         items(
             itemId = 1090,
             itemName = "kl",
