@@ -1,4 +1,4 @@
-package com.example.frame_tech_app.Pages
+package com.example.frametechapp.Pages
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -25,22 +24,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.frametechapp.MainActivity
-import com.example.frametechapp.Model.CateoryFilter
+import com.example.frametechapp.Model.CategoryFilter
 import com.example.frametechapp.R
 
 
@@ -51,7 +45,7 @@ var isExpanded = false
 fun Homepage(){
 
 
-    val listGetters = CateoryFilter()
+    val listGetters = CategoryFilter()
     //Best Sellers
     Column(modifier = Modifier
         .verticalScroll(rememberScrollState(), true)
@@ -139,7 +133,7 @@ fun miniCard(
                 expend.value = true
 
                 Toast
-                    .makeText(context, "Expend the size of the card isExpend: ${isExpanded}", Toast.LENGTH_SHORT)
+                    .makeText(context, "Expend the size of the card isExpend: $isExpanded", Toast.LENGTH_SHORT)
                     .show()
             }
             .padding(6.dp)
