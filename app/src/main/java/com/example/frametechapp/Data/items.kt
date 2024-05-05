@@ -5,12 +5,12 @@ import java.util.Date
 
 data class items(
     val itemId: Int,
-    val itemName:String,
-    val itemPhotos: List<Int> = emptyList(),
-    val itemDescription: List<String> = emptyList(),
-    val itemPrice: Double,
-    val itemCategory: String,
-    val dateAdded: Timestamp,
-    val onBuy: () -> Unit,
-    val onCancel: () -> Unit
+    var itemName:String,
+    var itemPhotos: List<Int> = emptyList(),
+    var itemDescription: List<String> = emptyList(),
+    var itemPrice: Double,
+    var itemCategory: String ="",
+    var dateAdded: Timestamp,
+    var onBuy: () -> Unit,
+    var onCancel: () -> Unit
 )
