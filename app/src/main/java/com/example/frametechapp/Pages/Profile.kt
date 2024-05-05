@@ -217,31 +217,19 @@ fun ProfileFrame(profile:List<profileData>){
 
                        // updateUserProfile(user.customerId,firstname,lastname,cellNumber,dob,imageUri,email,address,gender)//This function will be used to update the user profile.
                     // Capture the updated profile list returned from updateUserProfile function
-                    if(firstname.isEmpty() || lastname.isEmpty() || cellNumber.isEmpty() || dob.isEmpty() || email.isEmpty() || address.isEmpty() || gender.isEmpty()){
-                        currentProfile.value = updateUserProfile(
-                            user.customerId,
-                            user.firstname,
-                            user.lastname,
-                            user.cellNumber,
-                            user.dob,
-                            user.profileImage,
-                            user.email,
-                            user.address,
-                            user.gender
-                        )//If no changes are made to the profile, do not update it
-                    }else{
-                    currentProfile.value = updateUserProfile(
+                    val updatedProfile = updateUserProfile(//This will be checking if the user has changed the details and if not it will display the value stored.
                         user.customerId,
-                        firstname,
-                        lastname,
-                        cellNumber,
-                        dob,
+                        if (firstname.isNotEmpty()) firstname else user.firstname,
+                        if (lastname.isNotEmpty()) lastname else user.lastname,
+                        if (cellNumber.isNotEmpty()) cellNumber else user.cellNumber,
+                        if (dob.isNotEmpty()) dob else user.dob,
                         imageUri,
-                        email,
-                        address,
-                        gender
+                        if (email.isNotEmpty()) email else user.email,
+                        if (address.isNotEmpty()) address else user.address,
+                        if (gender.isNotEmpty()) gender else user.gender
                     )
-                    }
+
+                    currentProfile.value = updatedProfile
 
                     // Update the profile variable with the updated profile list
                     //currentProfile.value = updatedProfileList
