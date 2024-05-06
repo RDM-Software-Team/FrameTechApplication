@@ -67,7 +67,7 @@ fun ServiceFrame(){
    OutlinedTextField(
     value = "null",
     onValueChange = { it },
-    label = { Text(text = "Enter Name of Problem")}
+    label = { Text(text = "Enter Name of Problems")}
 
    )//Name of a problem.
    OutlinedTextField(
