@@ -62,7 +62,7 @@ fun ServiceFrame(){
    modifier = Modifier
     .padding(10.dp)
     .border(1.dp, Color.Black)
-    .fillMaxWidth()
+    .fillMaxWidth().border(1.dp , Color.Black)
   ) {
    OutlinedTextField(
     value = "null",
