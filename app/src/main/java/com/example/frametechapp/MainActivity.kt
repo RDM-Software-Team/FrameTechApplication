@@ -31,7 +31,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
 import com.example.frametechapp.Pages.About
 import com.example.frametechapp.Pages.ProductPage
-import com.example.frame_tech_app.Pages.ServicePage
+import com.example.frametechapp.Pages.ServicePage
 import kotlinx.coroutines.launch
 
 
