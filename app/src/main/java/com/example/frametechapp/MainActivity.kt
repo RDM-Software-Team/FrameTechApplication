@@ -29,6 +29,9 @@ import com.example.frametechapp.Pages.Profile
 import com.example.frametechapp.ui.theme.FrameTechAppTheme
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.frame_tech_app.Pages.Login
+import com.example.frame_tech_app.Pages.Registration
+import com.example.frametechapp.Model.UserAccessClass
 import com.example.frametechapp.Pages.About
 import com.example.frametechapp.Pages.ProductPage
 import com.example.frametechapp.Pages.ServicePage
@@ -40,7 +43,24 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FrameTechAppTheme {
-                HomeBase()
+
+                val navController = rememberNavController()
+
+                //HomeBase()
+                val verifyClass = UserAccessClass()
+                Column {
+                    NavHost(navController = navController, startDestination = "login") {
+                        composable("login") {
+                            verifyClass.Login(navController = navController)
+                        }
+                        composable("registration"){
+                            verifyClass.Registration(navController = navController)
+                        }
+                        composable("forgotPassword"){
+                            verifyClass.ForgotPassword(navController = navController)
+                        }
+                    }
+                }
             }
         }
     }
@@ -109,7 +129,20 @@ fun HomeBase(){
 @Preview(showBackground = true)
 @Composable
 fun MainPreview() {
+    val navController = rememberNavController()
+    val verifyClass = UserAccessClass()
+
     FrameTechAppTheme {
-        HomeBase()
+        //HomeBase()
+        Column {
+            NavHost(navController = navController, startDestination = "login") {
+                composable("login") {
+                    verifyClass.Login(navController = navController)
+                }
+                composable("registration"){
+                    verifyClass.Registration(navController = navController)
+                }
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.frametechapp.Pages
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +66,7 @@ fun ServicePage(){
  }
 }
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
 fun ServiceFrame(){
  val context = LocalContext.current
@@ -82,7 +85,7 @@ fun ServiceFrame(){
  val isBookInternetClick = remember {
       mutableStateOf(false)
  }
- var storeRepair by remember {//This will be taking the input by the user for the repair Service
+ val storeRepair by remember {//This will be taking the input by the user for the repair Service
   mutableStateOf(mutableListOf<RepairRequest>())
  }
  var imageUri by remember { mutableStateOf<Uri?>(null) }//This will be storing the uri for the image chosen from the device gallery
@@ -235,7 +238,7 @@ fun ServiceFrame(){
    }
    Button(onClick = {
     //checkInternetTime(price = chosenPrice.value)
-    isBookInternetClick.value = true;
+    isBookInternetClick.value = true
     Toast.makeText(context, "wow", Toast.LENGTH_LONG).show()
    }) {
     Text(text = "Book Internet Time ")
@@ -265,7 +268,7 @@ fun selectableOptions(): SnapshotStateList<Prices> {
   CheckboxOption(price = Prices.Prices4, selectedOptions)
  }
 
- return selectedOptions;
+ return selectedOptions
 }
 
 @Composable
@@ -301,16 +304,16 @@ fun CheckboxOption(
 @Composable
 fun checkInternetTime(price: Prices):MutableState<Int>{
  //This function will be used to display the time depending on the price
-      var timeByCash = remember {
-          mutableStateOf(0)
+      val timeByCash = remember {
+          mutableIntStateOf(0)
       }
       when(price) {
-       Prices.Prices1 -> timeByCash.value = 30;
-       Prices.Prices2 -> timeByCash.value = 60;
-       Prices.Prices3 -> timeByCash.value = 90;
-       Prices.Prices4 -> timeByCash.value = 120;
-       Prices.Prices5 -> timeByCash.value = 150;
-       Prices.Prices0 -> timeByCash.value =0;
+       Prices.Prices1 -> timeByCash.intValue = 30
+       Prices.Prices2 -> timeByCash.intValue = 60
+       Prices.Prices3 -> timeByCash.intValue = 90
+       Prices.Prices4 -> timeByCash.intValue = 120
+       Prices.Prices5 -> timeByCash.intValue = 150
+       Prices.Prices0 -> timeByCash.intValue =0
       }
-      return  timeByCash;
+      return  timeByCash
 }
