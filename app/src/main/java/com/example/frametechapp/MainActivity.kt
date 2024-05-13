@@ -59,6 +59,9 @@ class MainActivity : ComponentActivity() {
                         composable("forgotPassword"){
                             verifyClass.ForgotPassword(navController = navController)
                         }
+                        composable("homeBase") {
+                            HomeBase()
+                        }
                     }
                 }
             }

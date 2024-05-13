@@ -58,7 +58,7 @@ fun Homepage(){
             items(listGetters.FavouriteItems()) { item ->
 
                 if (isExpanded){
-                    maxCard(
+                    MaxCard(
                         itemId = item.itemId,
                         itemsName = item.itemName,
                         itemDescription = item.itemDescription,
@@ -68,7 +68,7 @@ fun Homepage(){
 
                     }
                 }else{
-                    miniCard(
+                    MiniCard(
                         itemId = item.itemId,
                         itemsName = item.itemName,
                         itemsPrice = item.itemPrice,
@@ -85,7 +85,7 @@ fun Homepage(){
         Text(text = "New Arrives")
         LazyColumn {
             items(listGetters.NewArrives()) { item ->
-                miniCard(
+                MiniCard(
                     itemId = item.itemId,
                     itemsName = item.itemName,
                     itemsPrice = item.itemPrice,
@@ -99,7 +99,7 @@ fun Homepage(){
         Text(text = "Un-brought Items ")
         LazyColumn {
             items(listGetters.UnBroughtItems()) { item ->
-                miniCard(
+                MiniCard(
                     itemId = item.itemId,
                     itemsName = item.itemName,
                     itemsPrice = item.itemPrice,
@@ -113,7 +113,7 @@ fun Homepage(){
 }
 
 @Composable
-fun miniCard(
+fun MiniCard(
     itemId:Int,
     itemsName:String,
     itemsPrice:Double,
@@ -122,7 +122,7 @@ fun miniCard(
 ){//This Method is for the miniCard in the Home Page
     val context = LocalContext.current
     var image = painterResource(R.drawable.default_image)
-    var expend = remember { mutableStateOf(isExpanded) }
+    val expend = remember { mutableStateOf(isExpanded) }
     for (i in itemsImage){   image = painterResource(id = i)}
     Column(
         Modifier
@@ -150,7 +150,7 @@ fun miniCard(
 }
 
 @Composable
-fun maxCard(
+fun MaxCard(
     itemId: Int,
     itemsName: String,
     itemDescription: List<String>,
