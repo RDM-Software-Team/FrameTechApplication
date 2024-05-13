@@ -63,7 +63,7 @@ fun Cart(){
 fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
  val context = LocalContext.current
  val columnNames = listOf("Item Name", "Quantity", "Price","SubTotal" ,"Delete")
- val quantity = remember { mutableStateOf<Int>(1) }
+ var quantity by remember { mutableStateOf<Int>(1) }
  val itemPrices = remember { mutableStateOf<List<Double>>(emptyList()) }
   Column(
     modifier = Modifier.fillMaxSize()
@@ -105,14 +105,14 @@ fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
                             .width(80.dp)
                             .fillMaxHeight())
                     OutlinedTextField(
-                        value = "${quantity.value}",
-                        onValueChange = {
+                        value = quantity.toString(),
+                        onValueChange = {  input ->
                             try {
-                                val newValue = it.toInt()
-                                quantity.value = newValue
+                                val newValue = input.takeIf { it.isNotEmpty() }?.toIntOrNull() ?: 1
+                                quantity += newValue
                             } catch (e: NumberFormatException) {
                                 // handle invalid input here
-                                quantity.value = 1 // default to 1 if input is invalid
+                                quantity = 1 // default to 1 if input is invalid
                             }
                         },
                         modifier = Modifier
@@ -128,7 +128,7 @@ fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
                             .fillMaxHeight()
                     )
                     Text(
-                        text = "R." + (item.itemPrice * quantity.value).toString(),
+                        text = "R." + (item.itemPrice * quantity).toString(),
                         modifier = Modifier
                             .border(1.dp, Color.Black)
                             .width(80.dp)
@@ -154,7 +154,7 @@ fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
         //totalAmount(item = itemPrices.value, quantity = quantity.value)//Display the total amount of all items
 
        }
-      CheckOut(item = cartItems, totalAmount = totalAmount(item = itemPrices.value, quantity = quantity.value))//Button check out to buy all items
+      CheckOut(item = cartItems, totalAmount = totalAmount(item = itemPrices.value, quantity = quantity))//Button check out to buy all items
     }
 }
 @Composable
