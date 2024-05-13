@@ -106,7 +106,15 @@ fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
                             .fillMaxHeight())
                     OutlinedTextField(
                         value = "${quantity.value}",
-                        onValueChange = { quantity.value = it.toInt() },
+                        onValueChange = {
+                            try {
+                                val newValue = it.toInt()
+                                quantity.value = newValue
+                            } catch (e: NumberFormatException) {
+                                // handle invalid input here
+                                quantity.value = 1 // default to 1 if input is invalid
+                            }
+                        },
                         modifier = Modifier
                             .padding(16.dp)
                             .width(50.dp),
