@@ -150,16 +150,16 @@ fun CartTable(cartItems: List<items>, onDelete: (Int) -> Unit){
     }
 }
 @Composable
-fun totalAmount(item:List<Double>, quantity:Int): MutableState<Double>{
+fun totalAmount(item: List<Double>, quantity: Int): MutableState<Double> {
     val totalAmount = remember { mutableStateOf(0.0) }
+
     LaunchedEffect(item, quantity) {
         var total = 0.0
         for (i in item.indices) {
-            total += item[i] * quantity
+            total += item[i]
         }
-        totalAmount.value = total
+        totalAmount.value = total * quantity
     }
-
 
     Text(
         text = "Total Amount: R.${totalAmount.value}",
@@ -168,7 +168,7 @@ fun totalAmount(item:List<Double>, quantity:Int): MutableState<Double>{
             .fillMaxWidth()
             .border(1.dp, Color.Yellow)
     )
-    
+
     return totalAmount
 }
 @Composable
