@@ -34,6 +34,7 @@ import com.example.frame_tech_app.Pages.Registration
 import com.example.frametechapp.Model.UserAccessClass
 import com.example.frametechapp.Pages.About
 import com.example.frametechapp.Pages.ProductPage
+import com.example.frametechapp.Pages.SellingPage
 import com.example.frametechapp.Pages.ServicePage
 import kotlinx.coroutines.launch
 
@@ -120,6 +121,9 @@ fun HomeBase(){
                     }
                     composable("servicePage") {
                         ServicePage()
+                    }
+                    composable("sellingPage"){
+                        SellingPage()
                     }
                 }
                 Spacer(modifier = Modifier.padding(padding))

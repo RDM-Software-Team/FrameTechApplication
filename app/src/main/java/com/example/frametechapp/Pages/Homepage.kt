@@ -50,7 +50,7 @@ fun Homepage(){
     Column(modifier = Modifier
         .verticalScroll(rememberScrollState(), true)
         .background(Color.LightGray)
-        .size(900.dp, 4500.dp)
+        .size(900.dp, 9000.dp)
         .padding(horizontal = 8.dp)
     ) {
         Text(text = "Best Sellers")
