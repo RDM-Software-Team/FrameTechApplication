@@ -1,6 +1,7 @@
 package com.example.frametechapp.Model
 
 import com.example.frametech_app.Data.items
+import com.example.frametechapp.R
 import java.sql.Timestamp
 
 
@@ -9,55 +10,55 @@ class CategoryFilter {
     var favList = listOf(
         items(
             itemId = 1090,
-            itemName = "kl",
-            itemPhotos = emptyList(),
+            itemName = "Dell optiplex",
+            itemPhotos = listOf(R.drawable.dell_optiplex_7010_mff_desktop_pc),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 12999.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 4321,
-            itemName = "bnm,",
-            itemPhotos = emptyList(),
+            itemName = "Dell latitude",
+            itemPhotos = listOf(R.drawable.dell_latitude_5430),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 10900.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 9086,
-            itemName = "hjklps",
-            itemPhotos = emptyList(),
+            itemName = "Dell Vostro ",
+            itemPhotos = listOf(R.drawable.dell_vostro_3520),
             itemDescription = emptyList(),
             itemCategory = "CellPhone",
-            itemPrice = 0.0,
+            itemPrice = 6500.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 1237,
-            itemName = "jklp",
-            itemPhotos = emptyList(),
+            itemName = "Dell Inspiron",
+            itemPhotos = listOf(R.drawable.dell_inspiron_3520),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 10900.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 7908,
-            itemName = "hjkl;[",
-            itemPhotos = emptyList(),
+            itemName = "Dell Optiplex",
+            itemPhotos = listOf(R.drawable.dell_optiplex_7410_aio_desktop_pc),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 20000.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
@@ -67,8 +68,8 @@ class CategoryFilter {
     val newItemList = listOf(
         items(
             itemId = 2589,
-            itemName = "dfghu",
-            itemPhotos = emptyList(),
+            itemName = "Hp Mouse",
+            itemPhotos = listOf(R.drawable.hp_wireless_mouse_200),
             itemDescription = emptyList(),
             itemCategory = "",
             itemPrice = 2094.90,
@@ -78,44 +79,44 @@ class CategoryFilter {
         ),
         items(
             itemId = 9800,
-            itemName = "hjkop",
-            itemPhotos = emptyList(),
+            itemName = "Hp Laptop",
+            itemPhotos = listOf(R.drawable.hp_laptop_15_fc0001ni___ryzen_part3),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 19200.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 9878,
-            itemName = "bjkl;'",
-            itemPhotos = emptyList(),
+            itemName = "Hp Usb Mouse",
+            itemPhotos = listOf(R.drawable.hp_usb_premium_mouse),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 650.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 2512,
-            itemName = "hjiop",
-            itemPhotos = emptyList(),
+            itemName = "All in One",
+            itemPhotos = listOf(R.drawable.hp_all_in_one_27_cr0003ni_pc__8j942ea_),
             itemDescription = emptyList(),
             itemCategory = "Desktop",
-            itemPrice = 0.0,
+            itemPrice = 12000.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 9876,
-            itemName = "hjkop[",
-            itemPhotos = emptyList(),
+            itemName = "Wired keyboard",
+            itemPhotos = listOf(R.drawable.microsoft_wired_desktop_keyboard_600),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 1200.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
@@ -125,55 +126,55 @@ class CategoryFilter {
     val unBroghtItems = listOf(
         items(
             itemId = 8865,
-            itemName = "hjiop[",
-            itemPhotos = emptyList(),
+            itemName = "Gaming Keyboard",
+            itemPhotos = listOf(R.drawable.redragon_rd_k506_centaur_membrane_rainbow_led_backlit_wired_gaming_keyboard),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 900.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 2589,
-            itemName = "bhjkop[]",
-            itemPhotos = emptyList(),
+            itemName = "All in One",
+            itemPhotos = listOf(R.drawable.hp_all_in_one_27_cr0003ni_pc__8j942ea_),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 29119.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 9976,
-            itemName = "hjkl",
-            itemPhotos = emptyList(),
+            itemName = "Hp Laptop ",
+            itemPhotos = listOf(R.drawable.hp_laptop_15_fc0001ni___ryzen),
             itemDescription = emptyList(),
             itemCategory = "",
-            itemPrice = 0.0,
+            itemPrice = 10000.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 2467,
-            itemName = "jkl;",
-            itemPhotos = emptyList(),
+            itemName = "Dell optiplex 7410",
+            itemPhotos = listOf(R.drawable.dell_optiplex_7410_aio_desktop_pc),
             itemDescription = emptyList(),
             itemCategory = "Laptops",
-            itemPrice = 0.0,
+            itemPrice = 7000.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
         ),
         items(
             itemId = 6878,
-            itemName = "fsassdfdsa",
-            itemPhotos = emptyList(),
+            itemName = "Hp Laptop 15",
+            itemPhotos = listOf(R.drawable.hp_laptop_15_fc0001ni___ryzen),
             itemDescription = emptyList(),
             itemCategory = "Laptops",
-            itemPrice = 0.0,
+            itemPrice = 21000.0,
             dateAdded = Timestamp(System.currentTimeMillis()),
             onBuy = {},
             onCancel = {}
