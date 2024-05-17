@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ProductionQuantityLimits
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Shop
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
@@ -39,56 +40,91 @@ import androidx.navigation.NavController
 
 @Composable
 fun TopNavBar(navController: NavController){
-    var isSelected by remember {//Will be used to keep track which button is selected
-        mutableStateOf(false)
-    }
+    var selectedRoute by remember { mutableStateOf("homepage") }
+
     NavigationBar {
         NavigationBarItem(
-            selected = isSelected,
-            label = { Text(text = "homepage")},
+            selected = selectedRoute == "homepage",
+            label = { Text(text = "Homepage") },
             onClick = {
-                navController.navigate("homepage")
-                isSelected = true
+                navController.navigate("homepage") {
+                    // Ensure only one copy of the route is in the back stack
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                }
+                selectedRoute = "homepage"
             },
             icon = {
                 Icon(
                     imageVector = Icons.Filled.Home,
-                    contentDescription = null)
+                    contentDescription = null
+                )
             }
         )
 
         NavigationBarItem(
-            selected = isSelected,
-            label = { Text(text = "Menu")},
+            selected = selectedRoute == "menu",
+            label = { Text(text = "Menu") },
             onClick = {
-                isSelected = true
+                navController.navigate("menu") {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                }
+                selectedRoute = "menu"
             },
             icon = {
-                Icon(imageVector = Icons.Filled.Menu, contentDescription = null)
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = null
+                )
             }
         )
 
         NavigationBarItem(
-            selected = isSelected,
-            label = { Text(text = "Cart")},
+            selected = selectedRoute == "cart",
+            label = { Text(text = "Cart") },
             onClick = {
-                navController.navigate("cart")
-                isSelected = true
+                navController.navigate("cart") {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                }
+                selectedRoute = "cart"
             },
             icon = {
-                Icon(imageVector = Icons.Filled.ShoppingCart, contentDescription = null)
+                Icon(
+                    imageVector = Icons.Filled.ShoppingCart,
+                    contentDescription = null
+                )
             }
         )
 
         NavigationBarItem(
-            selected = isSelected,
-            label = { Text(text = "Profile")},
+            selected = selectedRoute == "profile",
+            label = { Text(text = "Profile") },
             onClick = {
-                navController.navigate("profile")
-                isSelected = true
+                navController.navigate("profile") {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                }
+                selectedRoute = "profile"
             },
             icon = {
-                Icon(imageVector = Icons.Filled.Person, contentDescription = null)
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = null
+                )
             }
         )
     }
@@ -155,6 +191,19 @@ fun NavigateDrawer(navController: NavController){
             Text(text = "About Us ", color = Color.White, fontSize = MaterialTheme.typography.bodyLarge.fontSize)
         }
         Spacer(modifier = Modifier.padding(10.dp))
+        Row(
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth()
+                .background(Color.LightGray)
+                .clip(shape = RoundedCornerShape(15.dp))
+                .clickable { navController.navigate("sellingPage")},
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(imageVector = Icons.Filled.Sell, contentDescription = null,modifier = Modifier.size(45.dp))
+            Text(text = "Sell Your Item ", color = Color.White, fontSize = MaterialTheme.typography.bodyLarge.fontSize)
+        }
     }
 
 }
