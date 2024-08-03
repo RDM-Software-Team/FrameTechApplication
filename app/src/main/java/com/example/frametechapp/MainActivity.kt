@@ -90,7 +90,7 @@ fun HomeBase(){
             bottomBar = { TopNavBar(navController = navController)},
             floatingActionButton = {
                 ExtendedFloatingActionButton(
-                    text = { Text("Menu") },
+                    text = { Text("MenuS") },
                     icon = {  Icon(imageVector = Icons.Filled.Menu, contentDescription = null) },
                     onClick = {
                         scope.launch {
