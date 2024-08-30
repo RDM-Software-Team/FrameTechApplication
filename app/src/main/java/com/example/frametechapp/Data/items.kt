@@ -14,3 +14,16 @@ data class items(
     var onBuy: () -> Unit,
     var onCancel: () -> Unit
 )
+
+data class Product(
+    val productId: Int,
+    val pName: String,
+    val description: String,
+    val price: Double,
+    val category: String,
+    val images: String? // Base64-encoded image or null
+)
+data class Category(
+    val name: String,
+    val items: List<Product>
+)
