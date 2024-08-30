@@ -50,6 +50,13 @@ android {
 }
 
 dependencies {
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation ("com.google.code.gson:gson:2.8.8")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel:2.8.4")
+
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
