@@ -5,13 +5,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -22,10 +26,15 @@ import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -34,118 +43,94 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.frametechapp.Model.CategoryFilter
+import coil.compose.rememberAsyncImagePainter
+import com.example.frametechapp.Controller.CategoryFilter
+import com.example.frametechapp.Controller.NetworkManager
+import com.example.frametechapp.Controller.SessionViewModel
 import com.example.frametechapp.R
 
 
-
-var isExpanded = false
-@Preview(showBackground = true)
 @Composable
-fun Homepage(){
+fun Homepage(sessionViewModel: SessionViewModel) {
+    val context = LocalContext.current
+    val categories by sessionViewModel.categories.collectAsState(emptyList())
+    val isExpanded = remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        sessionViewModel.fetchProducts { error ->
+            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+        }
+    }
 
-    val listGetters = CategoryFilter()
-    //Best Sellers
-    Column(modifier = Modifier
-        .verticalScroll(rememberScrollState(), true)
-        .background(Color.LightGray)
-        .size(900.dp, 9000.dp)
-        .padding(horizontal = 8.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 8.dp)
+            .background(Color.LightGray)
+            .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "Best Sellers")
-        LazyColumn {
-            items(listGetters.FavouriteItems()) { item ->
-
-                if (isExpanded){
-                    MaxCard(
-                        itemId = item.itemId,
-                        itemsName = item.itemName,
-                        itemDescription = item.itemDescription,
-                        itemsPrice = item.itemPrice,
-                        itemsImage = item.itemPhotos,
-                        onClick = { /*TODO*/ }) {
-
+        categories.forEach { category ->
+            Text(
+                text = category.name,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 10.dp)
+            ) {
+                items(category.items) { item ->
+                    if (isExpanded.value) {
+                        MaxCard(
+                            itemId = item.productId,
+                            itemsName = item.pName,
+                            itemDescription = listOf(item.description), // Assuming descriptions are single-line for simplicity
+                            itemsPrice = item.price,
+                            itemsImage = listOf(R.drawable.default_image), // Placeholder if images are not provided
+                            onClick = { /* Handle click */ },
+                            onCancel = { /* Handle cancel */ }
+                        )
+                    } else {
+                        MiniCard(
+                            itemId = item.productId,
+                            itemsName = item.pName,
+                            itemsPrice = item.price,
+                            itemsImage = listOf(R.drawable.default_image), // Placeholder if images are not provided
+                            onClick = { /* Handle click */ }
+                        )
                     }
-                }else{
-                    MiniCard(
-                        itemId = item.itemId,
-                        itemsName = item.itemName,
-                        itemsPrice = item.itemPrice,
-                        itemsImage = item.itemPhotos,
-                        item.onBuy
-                    )
                 }
-
-                Spacer(modifier = Modifier.padding(10.dp))
-
-            }
-        }
-        //New Arrives
-        Text(text = "New Arrives")
-        LazyColumn {
-            items(listGetters.NewArrives()) { item ->
-                MiniCard(
-                    itemId = item.itemId,
-                    itemsName = item.itemName,
-                    itemsPrice = item.itemPrice,
-                    itemsImage = item.itemPhotos,
-                    item.onBuy
-                )
-                Spacer(modifier = Modifier.padding(10.dp))
-            }
-        }
-        //Un brought Items
-        Text(text = "Un-brought Items ")
-        LazyColumn {
-            items(listGetters.UnBroughtItems()) { item ->
-                MiniCard(
-                    itemId = item.itemId,
-                    itemsName = item.itemName,
-                    itemsPrice = item.itemPrice,
-                    itemsImage = item.itemPhotos,
-                    item.onBuy
-                )
-                Spacer(modifier = Modifier.padding(10.dp))
             }
         }
     }
 }
 
+
 @Composable
 fun MiniCard(
-    itemId:Int,
-    itemsName:String,
-    itemsPrice:Double,
-    itemsImage:List<Int>,
-    onClick:()->Unit
-){//This Method is for the miniCard in the Home Page
+    itemId: Int,
+    itemsName: String,
+    itemsPrice: Double,
+    itemsImage: List<Int>,
+    onClick: () -> Unit
+) {
     val context = LocalContext.current
-    var image = painterResource(R.drawable.default_image)
-    val expend = remember { mutableStateOf(isExpanded) }
-    for (i in itemsImage){   image = painterResource(id = i)}
+    val image = painterResource(itemsImage.firstOrNull() ?: R.drawable.default_image)
+
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .border(2.dp, Color.Black)
             .clip(RectangleShape)
             .clickable {
-                expend.value = true
-
-                Toast
-                    .makeText(context, "Expend the size of the card isExpend: $isExpanded", Toast.LENGTH_SHORT)
-                    .show()
+                onClick()
+                Toast.makeText(context, "Card clicked: $itemsName", Toast.LENGTH_SHORT).show()
             }
             .padding(6.dp)
     ) {
         Image(painter = image, contentDescription = itemsName, modifier = Modifier.fillMaxWidth())
-        Text(text = itemsName)
-        Text(text = "R $itemsPrice")
-        Button(onClick = {
-            //Getting and sending the data to the Cart.
-        }) {
-            Text(text = "Add to Cart")
-        }
+        Text(text = itemsName, style = MaterialTheme.typography.bodySmall)
+        Text(text = "R $itemsPrice", style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -156,50 +141,53 @@ fun MaxCard(
     itemDescription: List<String>,
     itemsPrice: Double,
     itemsImage: List<Int>,
-    onClick:()->Unit,
-    onCancel:() -> Unit
-){//This Method is for the maxCard in the Home Page to display everything related to the item selected.
+    onClick: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val images = itemsImage.takeIf { it.isNotEmpty() } ?: listOf(R.drawable.default_image)
+
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent),
-
+            .fillMaxWidth()
+            .background(Color.Transparent)
+            .padding(8.dp)
     ) {
         Row {
-            //Two side card for the image and the description
-            Sliding(image = itemsImage)
-            Spacer(modifier = Modifier.padding(2.dp))
-            Column {
-
-                Text(text = itemsName)
-                Text(text = itemDescription[0])
-                Text(text = "R $itemsPrice")
-                Button(onClick = {
-                    //Getting and sending the data to the Cart.
-                    onClick()
-                }){
-                    Text(text = "Add to Cart.")
+            Sliding(images)
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Text(text = itemsName, style = MaterialTheme.typography.titleSmall)
+                Text(text = itemDescription.getOrNull(0) ?: "", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "R $itemsPrice", style = MaterialTheme.typography.bodyMedium)
+                Button(onClick = onClick) {
+                    Text(text = "Add to Cart")
                 }
             }
-       }
-   }
+        }
+    }
 }
+
 @Composable
-fun Sliding(image:List<Int>){//This method will be a slider for the maxCard
-    var count = 0;
-    var countUp = remember { mutableStateOf(count) }
-    var countDown = remember { mutableStateOf(image.size-1) }
-    Row(
-        Modifier.fillMaxWidth(0.5f)
-    ) {
-        IconButton(onClick = { count += countUp.value }) {
-            Icon(imageVector = Icons.Filled.ArrowForwardIos, contentDescription = null)
-        }
-        Column {
-                Image(painter = painterResource(image[count]), contentDescription = null)
-        }
-        IconButton(onClick = { count -= countDown.value  }) {
+fun Sliding(images: List<Int>) {
+    var currentIndex by remember { mutableStateOf(0) }
+
+    Row(modifier = Modifier.fillMaxWidth()) {
+        IconButton(onClick = { if (currentIndex > 0) currentIndex-- }) {
             Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = null)
+        }
+        Image(
+            painter = rememberAsyncImagePainter( images[currentIndex]),
+            contentDescription = null,
+            modifier = Modifier
+                .weight(1f)
+                .aspectRatio(1f)
+        )
+        IconButton(onClick = { if (currentIndex < images.size - 1) currentIndex++ }) {
+            Icon(imageVector = Icons.Filled.ArrowForwardIos, contentDescription = null)
         }
     }
 }
