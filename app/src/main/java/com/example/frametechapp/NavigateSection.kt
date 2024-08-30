@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.ProductionQuantityLimits
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Shop
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -141,7 +142,7 @@ fun NavigateDrawer(navController: NavController){
                 .fillMaxWidth()
                 .background(Color.LightGray)
                 .clip(shape = RoundedCornerShape(15.dp))
-                .clickable { navController.navigate("homepage")},
+                .clickable { navController.navigate("homepage") },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
@@ -155,7 +156,7 @@ fun NavigateDrawer(navController: NavController){
                 .fillMaxWidth()
                 .background(Color.LightGray)
                 .clip(shape = RoundedCornerShape(15.dp))
-                .clickable { navController.navigate("productPage")},
+                .clickable { navController.navigate("productPage") },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
@@ -169,7 +170,7 @@ fun NavigateDrawer(navController: NavController){
                 .fillMaxWidth()
                 .background(Color.LightGray)
                 .clip(shape = RoundedCornerShape(15.dp))
-                .clickable { navController.navigate("servicePage")},
+                .clickable { navController.navigate("servicePage") },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
@@ -183,7 +184,7 @@ fun NavigateDrawer(navController: NavController){
                 .fillMaxWidth()
                 .background(Color.LightGray)
                 .clip(shape = RoundedCornerShape(15.dp))
-                .clickable { navController.navigate("about")},
+                .clickable { navController.navigate("about") },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
@@ -197,12 +198,26 @@ fun NavigateDrawer(navController: NavController){
                 .fillMaxWidth()
                 .background(Color.LightGray)
                 .clip(shape = RoundedCornerShape(15.dp))
-                .clickable { navController.navigate("sellingPage")},
+                .clickable { navController.navigate("sellingPage") },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
             Icon(imageVector = Icons.Filled.Sell, contentDescription = null,modifier = Modifier.size(45.dp))
             Text(text = "Sell Your Item ", color = Color.White, fontSize = MaterialTheme.typography.bodyLarge.fontSize)
+        }
+        HorizontalDivider(modifier = Modifier.weight(1f))
+        Row(
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth()
+                .background(Color.LightGray)
+                .clip(shape = RoundedCornerShape(15.dp))
+                .clickable { navController.navigate("Logout") },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(imageVector = Icons.Filled.Sell, contentDescription = null,modifier = Modifier.size(45.dp))
+            Text(text = "Logout ", color = Color.White, fontSize = MaterialTheme.typography.bodyLarge.fontSize)
         }
     }
 
