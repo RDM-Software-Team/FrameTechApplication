@@ -1,5 +1,6 @@
 package com.example.frametechapp
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,11 +29,18 @@ import com.example.frametechapp.Pages.Homepage
 import com.example.frametechapp.Pages.Profile
 import com.example.frametechapp.ui.theme.FrameTechAppTheme
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.frame_tech_app.Pages.Login
 import com.example.frame_tech_app.Pages.Registration
-import com.example.frametechapp.Model.UserAccessClass
+import com.example.frametechapp.Controller.NetworkManager
+import com.example.frametechapp.Controller.SessionManager
+import com.example.frametechapp.Controller.SessionViewModel
+import com.example.frametechapp.Controller.SessionViewModelFactory
+import com.example.frametechapp.Controller.UserAccessClass
 import com.example.frametechapp.Pages.About
+import com.example.frametechapp.Pages.Logout
 import com.example.frametechapp.Pages.ProductPage
 import com.example.frametechapp.Pages.SellingPage
 import com.example.frametechapp.Pages.ServicePage
@@ -43,28 +51,36 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            FrameTechAppTheme {
+            AppNav()
+        }
+    }
+}
+@Composable
+fun AppNav(viewModelFactory: SessionViewModelFactory = SessionViewModelFactory(SessionManager(context = LocalContext.current))
+){
+    val sessionViewModel: SessionViewModel = viewModel(factory = viewModelFactory)
 
-                val navController = rememberNavController()
+    val navController = rememberNavController()
 
-                //HomeBase()
-                val verifyClass = UserAccessClass()
-                Column {
-                    NavHost(navController = navController, startDestination = "login") {
-                        composable("login") {
-                            verifyClass.Login(navController = navController)
-                        }
-                        composable("registration"){
-                            verifyClass.Registration(navController = navController)
-                        }
-                        composable("forgotPassword"){
-                            verifyClass.ForgotPassword(navController = navController)
-                        }
-                        composable("homeBase") {
-                            HomeBase()
-                        }
-                    }
-                }
+    //HomeBase()
+    val verifyClass = UserAccessClass()
+    Column {
+        NavHost(navController = navController, startDestination = "login") {
+            composable("login") {
+                Login(sessionViewModel = sessionViewModel,
+                    onLoginSuccess = { navController.navigate("homeBase") },
+                    onCreate = { navController.navigate("registration") },
+                    onForgot = { navController.navigate("forgotPassword") }
+                )
+            }
+            composable("registration"){
+                Registration(sessionViewModel = sessionViewModel, onRegisterSuccess = { navController.navigate("login") })
+            }
+            composable("forgotPassword"){
+                verifyClass.ForgotPassword(navController = navController)
+            }
+            composable("homeBase") {
+                HomeBase()
             }
         }
     }
@@ -72,11 +88,15 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeBase(){
+fun HomeBase(viewModelFactory: SessionViewModelFactory = SessionViewModelFactory(SessionManager(context = LocalContext.current))){
     val navController = rememberNavController()
+    val sessionViewModel: SessionViewModel = viewModel(factory = viewModelFactory)
+
     val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val sessionViewModel2 = remember { SessionViewModel(SessionManager(context as ComponentActivity), NetworkManager()) }
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -105,10 +125,10 @@ fun HomeBase(){
             Column {
                 NavHost(navController = navController, startDestination = "homepage") {
                     composable("homepage") {
-                        Homepage()
+                        Homepage(sessionViewModel)
                     }
                     composable("cart") {
-                        Cart()
+                        Cart(sessionViewModel2)
                     }
                     composable("profile") {
                         Profile()
@@ -125,6 +145,10 @@ fun HomeBase(){
                     composable("sellingPage"){
                         SellingPage()
                     }
+                    composable("logout"){
+                        Logout( sessionViewModel = sessionViewModel,
+                            onLogout = { navController.navigate("login") }  )
+                    }
                 }
                 Spacer(modifier = Modifier.padding(padding))
             }
@@ -133,23 +157,3 @@ fun HomeBase(){
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun MainPreview() {
-    val navController = rememberNavController()
-    val verifyClass = UserAccessClass()
-
-    FrameTechAppTheme {
-        //HomeBase()
-        Column {
-            NavHost(navController = navController, startDestination = "login") {
-                composable("login") {
-                    verifyClass.Login(navController = navController)
-                }
-                composable("registration"){
-                    verifyClass.Registration(navController = navController)
-                }
-            }
-        }
-    }
-}
