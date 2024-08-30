@@ -9,5 +9,6 @@ data class SellsReports(
     var productDescription: String ="",
     var productImages: List<Uri?> = emptyList(),
     var status: String = "",
+    var price:Double,
     val timestamp: Timestamp = Timestamp(System.currentTimeMillis())
 )

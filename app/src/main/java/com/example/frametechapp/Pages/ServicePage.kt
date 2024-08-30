@@ -169,9 +169,9 @@ fun ServiceFrame(){
     onClick = {
               if(problemName.value.isNotEmpty() || problemDescription.value.isNotEmpty()){
                storeRepair.add(RepairRequest(
-                "",
+                10,
                 problemName = problemName.value,
-                problemDescription = problemDescription.value, )
+                problemDescription = problemDescription.value,)
                )
                Toast.makeText(context,"Saved",Toast.LENGTH_LONG).show()
                //When saved it must return to empty state

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.frametechapp.Data.SellsReports
 import com.example.frametechapp.R
+import org.w3c.dom.Text
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
@@ -246,6 +247,7 @@ fun SellingPage() {
                             SellsReports(
                                 productName = productName,
                                 productDescription = productDescription,
+                                price = 0.00
                             )
                         )
                         productName = ""
@@ -260,7 +262,8 @@ fun SellingPage() {
                                     imageBackUri,
                                     imageFrontUri,
                                     imageArielUri
-                                )
+                                ),
+                                price = 0.0
                             )
                         )
                         Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()

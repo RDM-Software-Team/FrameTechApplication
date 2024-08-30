@@ -3,8 +3,11 @@ package com.example.frametechapp.Data
 import android.net.Uri
 
 data class RepairRequest(//This class will be used to store request by the user
-    var customerID: String,
+    val repairId: Int,
+    var customerID: String ="",
     var problemName:String,
     var problemDescription: String,
-    var profileImage: Uri? = null,
-    )
+    var profileImage: String? = null,
+    val bookedDate: String? = null
+
+)
