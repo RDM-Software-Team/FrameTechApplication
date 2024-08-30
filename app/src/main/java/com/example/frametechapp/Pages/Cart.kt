@@ -43,26 +43,151 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.frame_tech_app.Data.CartItem
 import com.example.frametech_app.Data.items
-import com.example.frametechapp.Model.CategoryFilter
+import com.example.frametechapp.Controller.CategoryFilter
+import com.example.frametechapp.Controller.SessionViewModel
 
-@Preview(showBackground = true)
 @Composable
-fun Cart() {
+fun Cart(sessionViewModel: SessionViewModel) {
+    val cartItems by sessionViewModel.cartItems
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        sessionViewModel.resetCartPagination()
+        sessionViewModel.fetchCartItems { error ->
+            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(text = "Cart")
-        val listGetters = CategoryFilter()
-        var CartList by remember { mutableStateOf(listGetters.newItemList) }
-        CartTable(cartItems = CartList) { itemId ->
-            // Delete function
-            CartList = CartList.filter { it.itemId != itemId }
+
+        if (cartItems.isEmpty()) {
+            Text(text = "Your cart is empty")
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(cartItems) { item ->
+                    CartItemRow(item, sessionViewModel)
+                }
+
+                // Add a button to load more items if available
+                item {
+                    if (sessionViewModel.morePagesAvailable.value) {
+                        Button(
+                            onClick = {
+                                sessionViewModel.loadMoreCartItems { error ->
+                                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                        ) {
+                            Text(text = "Load More Items")
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
+@Composable
+fun CartItemRow(item: CartItem, sessionViewModel: SessionViewModel) {
+    val context = LocalContext.current
+    var quantity by remember { mutableStateOf(item.quantity) }
+    var showDialog by remember { mutableStateOf(false) } // State to manage the dialog visibility
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Delete Item") },
+            text = { Text(text = "Are you sure you want to delete ${item.itemName}?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        sessionViewModel.deleteCartItem(item.itemId) { error ->
+                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(7.dp)
+//            .align(Alignment.CenterHorizontally),
+        ,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = item.itemName,
+            modifier = Modifier
+                .border(1.dp, Color.Black)
+                .width(80.dp)
+                .fillMaxHeight()
+        )
+        OutlinedTextField(
+            value = quantity.toString(),
+            onValueChange = { input ->
+                val newValue = input.toIntOrNull() ?: quantity
+                if (newValue > 0) {
+                    quantity = newValue
+                    sessionViewModel.updateCartItem(item.itemId, quantity) { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            modifier = Modifier
+                .padding(16.dp)
+                .width(50.dp),
+            textStyle = TextStyle(fontSize = 12.sp)
+        )
+        Text(
+            text = "R." + item.itemPrice.toString(),
+            modifier = Modifier
+                .border(1.dp, Color.Black)
+                .width(80.dp)
+                .fillMaxHeight()
+        )
+        Text(
+            text = "R." + (item.itemPrice * quantity).toString(),
+            modifier = Modifier
+                .border(1.dp, Color.Black)
+                .width(80.dp)
+                .fillMaxHeight()
+        )
+        IconButton(
+            onClick = { showDialog = true }, // Show confirmation dialog
+            modifier = Modifier
+                .padding(5.dp)
+                .width(80.dp)
+                .height(30.dp),
+        ) {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+        }
+    }
+}
+
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable

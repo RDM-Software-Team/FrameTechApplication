@@ -10,3 +10,9 @@ data class Cart(
     val onDelete:() -> Unit,
     val total: Double
 )
+data class CartItem(
+    val itemId: Int,
+    val itemName: String,
+    val itemPrice: Double,
+    val quantity: Int
+)
