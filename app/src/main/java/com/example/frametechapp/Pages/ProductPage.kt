@@ -1,8 +1,34 @@
 package com.example.frametechapp.Pages
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.frametech_app.Data.Category
 
 @Preview(showBackground = true)
 @Composable
@@ -122,3 +148,90 @@ fun ProductView() {
 //    }//This is the improved but not the final version which displays the product in a row but not based by their category
 }
 
+//fun exampleOfSearchCode(){
+// val context = LocalContext.current
+// val categories by sessionViewModel.categories.collectAsState()
+// val products by sessionViewModel.products.collectAsState()
+// val isLoading by sessionViewModel.isLoading
+// val error by sessionViewModel.error.collectAsState()
+//
+// var selectedCategory by remember { mutableStateOf<Category?>(null) }
+// var expandedProductId by remember { mutableStateOf<Int?>(null) }
+// var pressExpended by remember { mutableStateOf(false) }
+//
+// LaunchedEffect(Unit) {
+//  sessionViewModel.fetchCategories()
+// }
+//
+// Column(
+//  modifier = Modifier
+//   .fillMaxSize()
+//   .background(Color.LightGray)
+// ) {
+//  // Error handling
+//  error?.let {
+//   Text(text = it, color = Color.Red, modifier = Modifier.padding(vertical = 8.dp))
+//  }
+//
+//  // Loading state
+//  if (isLoading) {
+//   CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+//  } else {
+//   // Category Selection Dropdown
+//   if (categories.isNotEmpty()) {
+//    ExposedDropdownMenuBox(
+//     expanded = pressExpended,
+//     onExpandedChange = { pressExpended = it }
+//    ) {
+//     TextField(
+//      value = selectedCategory?.category ?: "Select a Category",
+//      onValueChange = {},
+//      readOnly = true,
+//      trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = pressExpended) },
+//      modifier = Modifier.menuAnchor()
+//     )
+//
+//     ExposedDropdownMenu(
+//      expanded = pressExpended,
+//      onDismissRequest = { pressExpended = false }
+//     ) {
+//      categories.forEach { category ->
+//       DropdownMenuItem(
+//        text = { Text(category.category) },
+//        onClick = {
+//         selectedCategory = category
+//         pressExpended = false // Close the dropdown after selection
+//         sessionViewModel.fetchProducts(category.category) // Fetch products for the new category
+//        }
+//       )
+//      }
+//     }
+//    }
+//
+//    // Display products for the selected category
+//    LazyColumn(
+//     modifier = Modifier.weight(1f),
+//     verticalArrangement = Arrangement.spacedBy(10.dp),
+//     contentPadding = PaddingValues(vertical = 10.dp)
+//    ) {
+//     items(products) { product ->
+//      if (expandedProductId == product.productId) {
+//       MaxCard(
+//        product = product,
+//        onClick = { /* Handle add to cart */ },
+//        onCancel = { expandedProductId = null }
+//       )
+//      } else {
+//       MiniCard(
+//        product = product,
+//        onClick = { expandedProductId = product.productId }
+//       )
+//      }
+//     }
+//    }
+//   } else {
+//    Text(text = "No categories available", style = MaterialTheme.typography.bodyMedium)
+//   }
+//  }
+// }
+//}

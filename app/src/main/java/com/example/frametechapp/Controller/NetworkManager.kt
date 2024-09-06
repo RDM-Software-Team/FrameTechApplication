@@ -1,10 +1,20 @@
 package com.example.frametechapp.Controller
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
+import android.util.Base64
 import android.util.Log
 import com.example.frame_tech_app.Data.CartItem
+import com.example.frametech_app.Data.Category
 import com.example.frametech_app.Data.Product
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.FormBody
@@ -16,6 +26,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class NetworkManager {
+    private val  baseUrl ="http://192.168.18.113/computer_Complex_mobile"
     private val client = OkHttpClient()
 
     fun login(email: String, password: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
@@ -25,13 +36,12 @@ class NetworkManager {
             .build()
 
         val request = Request.Builder()
-            .url("http://192.168.18.113/computer_Complex_mobile/login.php")
+            .url("$baseUrl/login.php")
             .post(formBody)
             .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                // Post to main thread for error callback
                 Handler(Looper.getMainLooper()).post {
                     onError("Network Error: ${e.message}")
                 }
@@ -39,44 +49,34 @@ class NetworkManager {
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    when (response.code) {
-                        200 -> {
-                            val responseData = response.body?.string()
-                            try {
-                                val json = JSONObject(responseData ?: "")
-                                if (json.has("token")) {
-                                    // Post to main thread for success callback
-                                    Handler(Looper.getMainLooper()).post {
-                                        onSuccess(json.getString("token"))
-                                    }
-                                } else {
-                                    // Post to main thread for error callback
-                                    Handler(Looper.getMainLooper()).post {
-                                        onError(json.getString("message"))
-                                    }
-                                }
-                            } catch (e: JSONException) {
-                                // Post to main thread for error callback
+                    val responseBody = response.body?.string()
+                    if (response.isSuccessful) {
+                        try {
+                            val json = JSONObject(responseBody ?: "")
+                            if (json.has("token")) {
                                 Handler(Looper.getMainLooper()).post {
-                                    onError("Response Error: ${e.message}")
+                                    onSuccess(json.getString("token"))
+                                }
+                            } else {
+                                Handler(Looper.getMainLooper()).post {
+                                    onError(json.getString("message"))
                                 }
                             }
+                        } catch (e: JSONException) {
+                            Handler(Looper.getMainLooper()).post {
+                                onError("Response Error: ${e.message}")
+                            }
                         }
-
-                        400 -> Handler(Looper.getMainLooper()).post {
-                            onError("Bad Request: Check your input")
+                    } else {
+                        val errorMessage = when (response.code) {
+                            400 -> "Bad Request: Check your input"
+                            401 -> "Unauthorized: Incorrect email or password"
+                            403 -> "Forbidden: Access denied"
+                            500 -> "Server Error: Please try again later"
+                            else -> "Unexpected Error: ${response.message}"
                         }
-                        401 -> Handler(Looper.getMainLooper()).post {
-                            onError("Unauthorized: Incorrect email or password")
-                        }
-                        403 -> Handler(Looper.getMainLooper()).post {
-                            onError("Forbidden: Access denied")
-                        }
-                        500 -> Handler(Looper.getMainLooper()).post {
-                            onError("Server Error: Please try again later")
-                        }
-                        else -> Handler(Looper.getMainLooper()).post {
-                            onError("Unexpected Error: ${response.message}")
+                        Handler(Looper.getMainLooper()).post {
+                            onError(errorMessage)
                         }
                     }
                 }
@@ -104,7 +104,7 @@ class NetworkManager {
             .build()
 
         val request = Request.Builder()
-            .url("http://192.168.18.113/computer_Complex_mobile/register.php")
+            .url("$baseUrl/register.php")
             .post(formBody)
             .build()
 
@@ -113,61 +113,84 @@ class NetworkManager {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("NetworkManager", "Registration request failed", e)
-                onError("Network Error: ${e.message}")
+                Handler(Looper.getMainLooper()).post {
+                    onError("Network Error: ${e.message}")
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.use { res ->
-                    val responseBody = res.body?.string()
+                response.use {
+                    val responseBody = response.body?.string()
                     Log.d("NetworkManager", "Registration response: $responseBody")
 
-                    when {
-                        res.isSuccessful && responseBody?.contains("created", ignoreCase = true) == true -> {
+                    val errorMessage = when {
+                        response.isSuccessful && responseBody?.contains("created", ignoreCase = true) == true -> {
                             Log.d("NetworkManager", "Registration successful")
-                            onSuccess()
+                            Handler(Looper.getMainLooper()).post {
+                                onSuccess()
+                            }
+                            return
                         }
-                        res.code == 400 -> onError("Bad Request: Check your input")
-                        res.code == 409 -> onError("Conflict: Email already registered")
-                        res.code == 500 -> onError("Server Error: Please try again later")
-                        else -> onError("Unexpected Error: ${res.message}")
+                        response.code == 400 -> "Bad Request: Check your input"
+                        response.code == 409 -> "Conflict: Email already registered"
+                        response.code == 500 -> "Server Error: Please try again later"
+                        else -> "Unexpected Error: ${response.message}"
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        onError(errorMessage)
                     }
                 }
             }
         })
     }
 
-    fun refreshSession(token: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {//this function will be refreshing the token assigned to a user when logged in
+    fun refreshSession(token: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         val formBody = FormBody.Builder()
             .add("token", token)
             .build()
 
         val request = Request.Builder()
-            .url("http://192.168.18.113/computer_Complex_mobile/refresh_token.php")////must change to actual api url
+            .url("$baseUrl/refresh_token.php")
             .post(formBody)
             .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                onError("Network Error: ${e.message}")
+                Handler(Looper.getMainLooper()).post {
+                    onError("Network Error: ${e.message}")
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    if (!response.isSuccessful) {
-                        onError("Unexpected code $response")
-                        return
-                    }
-                    val responseData = response.body?.string()
-                    val json = JSONObject(responseData ?: "")
-                    if (json.has("token")) {
-                        onSuccess(json.getString("token"))
+                    if (response.isSuccessful) {
+                        val responseBody = response.body?.string()
+                        try {
+                            val json = JSONObject(responseBody ?: "")
+                            if (json.has("token")) {
+                                Handler(Looper.getMainLooper()).post {
+                                    onSuccess(json.getString("token"))
+                                }
+                            } else {
+                                Handler(Looper.getMainLooper()).post {
+                                    onError(json.getString("message"))
+                                }
+                            }
+                        } catch (e: JSONException) {
+                            Handler(Looper.getMainLooper()).post {
+                                onError("Response Error: ${e.message}")
+                            }
+                        }
                     } else {
-                        onError(json.getString("message"))
+                        Handler(Looper.getMainLooper()).post {
+                            onError("Unexpected code ${response.code}")
+                        }
                     }
                 }
             }
         })
     }
+
     fun addToCart(
         token: String,
         productId: Int,
@@ -182,26 +205,36 @@ class NetworkManager {
             .build()
 
         val request = Request.Builder()
-            .url("http://192.168.18.113/computer_Complex_mobile/cart.php")
+            .url("$baseUrl/cart.php")
             .post(formBody)
             .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                onError("Network Error: ${e.message}")
+                Handler(Looper.getMainLooper()).post {
+                    onError("Network Error: ${e.message}")
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    when (response.code) {
-                        200 -> onSuccess("Cart updated successfully")
-                        401 -> onError("Unauthorized: Invalid or expired token")
-                        else -> onError("Unexpected Error: ${response.message}")
+                    val errorMessage = when {
+                        response.isSuccessful -> "Cart updated successfully"
+                        response.code == 401 -> "Unauthorized: Invalid or expired token"
+                        else -> "Unexpected Error: ${response.message}"
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        if (response.isSuccessful) {
+                            onSuccess(errorMessage)
+                        } else {
+                            onError(errorMessage)
+                        }
                     }
                 }
             }
         })
     }
+
     fun fetchCartItems(
         token: String,
         page: Int,
@@ -214,136 +247,7 @@ class NetworkManager {
             .build()
 
         val request = Request.Builder()
-            .url("http://192.168.18.113/computer_Complex_mobile/fetch_cart.php")
-            .post(formBody)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                onError("Network Error: ${e.message}")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!response.isSuccessful) {
-                        onError("Unexpected Error: ${response.message}")
-                        return
-                    }
-                    val responseData = response.body?.string()
-                    if (responseData != null) {
-                        try {
-                            val json = JSONObject(responseData)
-                            val itemsArray = json.getJSONArray("items")
-                            val cartItems = mutableListOf<CartItem>()
-                            val morePages = json.getBoolean("more_pages")
-
-                            for (i in 0 until itemsArray.length()) {
-                                val item = itemsArray.getJSONObject(i)
-                                val cartItem = CartItem(
-                                    itemId = item.getInt("item_id"),
-                                    itemName = item.getString("item_name"),
-                                    itemPrice = item.getDouble("item_price"),
-                                    quantity = item.getInt("quantity")
-                                )
-                                cartItems.add(cartItem)
-                            }
-                            onSuccess(cartItems, morePages)
-                        } catch (e: Exception) {
-                            onError("Parsing Error: ${e.message}")
-                        }
-                    } else {
-                        onError("No data received")
-                    }
-                }
-            }
-        })
-    }
-
-    fun updateCartItem(
-        token: String,
-        cartItemId: Int,
-        quantity: Int,
-        onSuccess: (String) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val formBody = FormBody.Builder()
-            .add("token", token)
-            .add("cart_item_id", cartItemId.toString())
-            .add("quantity", quantity.toString())
-            .build()
-
-        val request = Request.Builder()
-            .url("http://192.168.18.113/computer_Complex_mobile/update_cart_item.php")
-            .post(formBody)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                onError("Network Error: ${e.message}")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (response.isSuccessful) {
-                        onSuccess("Item updated successfully")
-                    } else {
-                        onError("Failed to update item: ${response.message}")
-                    }
-                }
-            }
-        })
-    }
-
-    fun deleteCartItem(
-        token: String,
-        cartItemId: Int,
-        onSuccess: (String) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val formBody = FormBody.Builder()
-            .add("token", token)
-            .add("cart_item_id", cartItemId.toString())
-            .build()
-
-        val request = Request.Builder()
-            .url("http://192.168.18.113/computer_Complex_mobile/delete_cart_item.php")
-            .post(formBody)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                onError("Network Error: ${e.message}")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (response.isSuccessful) {
-                        onSuccess("Item deleted successfully")
-                    } else {
-                        onError("Failed to delete item: ${response.message}")
-                    }
-                }
-            }
-        })
-    }
-
-    fun fetchProducts(
-        token: String,
-        category: String,
-        page: Int,
-        limit: Int,
-        onSuccess: (List<Product>, Boolean) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val formBody = FormBody.Builder()
-            .add("token", token)
-            .add("category", category)
-            .add("page", page.toString())
-            .add("limit", limit.toString())
-            .build()
-
-        val request = Request.Builder()
-            .url("http://192.168.18.113/computer_Complex_mobile/fetch_products.php")
+            .url("$baseUrl/fetch_cart.php")
             .post(formBody)
             .build()
 
@@ -366,26 +270,24 @@ class NetworkManager {
                     if (responseData != null) {
                         try {
                             val json = JSONObject(responseData)
-                            val productsArray = json.getJSONArray("products")
-                            val products = mutableListOf<Product>()
+                            val itemsArray = json.getJSONArray("items")
+                            val cartItems = mutableListOf<CartItem>()
                             val morePages = json.getBoolean("more_pages")
 
-                            for (i in 0 until productsArray.length()) {
-                                val product = productsArray.getJSONObject(i)
-                                val productItem = Product(
-                                    productId = product.getInt("product_id"),
-                                    pName = product.getString("pName"),
-                                    description = product.getString("description"),
-                                    price = product.getDouble("price"),
-                                    category = product.getString("category"),
-                                    images = product.optString("images", null)
+                            for (i in 0 until itemsArray.length()) {
+                                val item = itemsArray.getJSONObject(i)
+                                val cartItem = CartItem(
+                                    itemId = item.getInt("item_id"),
+                                    itemName = item.getString("item_name"),
+                                    itemPrice = item.getDouble("item_price"),
+                                    quantity = item.getInt("quantity")
                                 )
-                                products.add(productItem)
+                                cartItems.add(cartItem)
                             }
                             Handler(Looper.getMainLooper()).post {
-                                onSuccess(products, morePages)
+                                onSuccess(cartItems, morePages)
                             }
-                        } catch (e: JSONException) {
+                        } catch (e: Exception) {
                             Handler(Looper.getMainLooper()).post {
                                 onError("Parsing Error: ${e.message}")
                             }
@@ -398,6 +300,178 @@ class NetworkManager {
                 }
             }
         })
+    }
+
+    fun updateCartItem(
+        token: String,
+        cartItemId: Int,
+        quantity: Int,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val formBody = FormBody.Builder()
+            .add("token", token)
+            .add("cart_item_id", cartItemId.toString())
+            .add("quantity", quantity.toString())
+            .build()
+
+        val request = Request.Builder()
+            .url("$baseUrl/update_cart.php")
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Handler(Looper.getMainLooper()).post {
+                    onError("Network Error: ${e.message}")
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    val errorMessage = when {
+                        response.isSuccessful -> "Cart item updated successfully"
+                        response.code == 401 -> "Unauthorized: Invalid or expired token"
+                        else -> "Unexpected Error: ${response.message}"
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        if (response.isSuccessful) {
+                            onSuccess(errorMessage)
+                        } else {
+                            onError(errorMessage)
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    fun removeFromCart(
+        token: String,
+        cartItemId: Int,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val formBody = FormBody.Builder()
+            .add("token", token)
+            .add("cart_item_id", cartItemId.toString())
+            .build()
+
+        val request = Request.Builder()
+            .url("$baseUrl/remove_cart.php")
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Handler(Looper.getMainLooper()).post {
+                    onError("Network Error: ${e.message}")
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    val errorMessage = when {
+                        response.isSuccessful -> "Item removed from cart successfully"
+                        response.code == 401 -> "Unauthorized: Invalid or expired token"
+                        else -> "Unexpected Error: ${response.message}"
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        if (response.isSuccessful) {
+                            onSuccess(errorMessage)
+                        } else {
+                            onError(errorMessage)
+                        }
+                    }
+                }
+            }
+        })
+    }
+    suspend fun fetchCategories(): Result<List<Category>> = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("$baseUrl/fetch_categories.php")
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                val responseBody = response.body?.string() ?: throw IOException("Empty response body")
+                val jsonObject = JSONObject(responseBody)
+                val categoriesArray = jsonObject.getJSONArray("categories")
+                val categories = List(categoriesArray.length()) { i ->
+                    Category(categoriesArray.getString(i))
+                }
+                Log.d("fetch categories response: ","$categories")
+                Result.success(categories)
+            }
+        } catch (e: Exception) {
+            Log.d("fetch categories errors: ","${e.message}")
+
+            Result.failure(e)
+        }
+    }
+
+    suspend fun fetchProducts(token: String, category: String, page: Int, limit: Int): Result<Pair<List<Product>, Boolean>> = withContext(Dispatchers.IO) {
+        try {
+            val requestBody = FormBody.Builder()
+                .add("token", token)
+                .add("category", category)
+                .add("page", page.toString())
+                .add("limit", limit.toString())
+                .build()
+
+            val request = Request.Builder()
+                .url("$baseUrl/fetching_products.php")
+                .post(requestBody)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                val responseBody = response.body?.string() ?: throw IOException("Empty response body")
+
+                // Log the raw response to debug
+                Log.e("Raw Response", responseBody)
+
+                // Check if the response is valid JSON
+                val jsonObject = try {
+                    JSONObject(responseBody)
+                } catch (e: JSONException) {
+                    throw IOException("Invalid JSON format: ${e.message}")
+                }
+
+                val productsArray = jsonObject.getJSONArray("products")
+                val morePages = jsonObject.getBoolean("more_pages")
+                val products = List(productsArray.length()) { i ->
+                    val productJson = productsArray.getJSONObject(i)
+                    Product(
+                        productId = productJson.getInt("product_id"),
+                        pName = productJson.getString("pName"),
+                        description = productJson.getString("discription"),
+                        price = productJson.getDouble("price"),
+                        category = productJson.getString("category"),
+                        imagePath = productJson.optString("image_path")
+                    )
+                }
+
+                Result.success(Pair(products, morePages))
+            }
+        } catch (e: Exception) {
+            Log.e("fetch products error: ", e.message ?: "Unknown error")
+            Result.failure(e)
+        }
+    }
+
+    //reading Longblob image
+    fun decodeBase64ToBitmap(base64: String): Bitmap? {
+        return try {
+            val decodedString = Base64.decode(base64, Base64.DEFAULT)
+            BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }
 

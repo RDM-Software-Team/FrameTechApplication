@@ -21,9 +21,9 @@ data class Product(
     val description: String,
     val price: Double,
     val category: String,
-    val images: String? // Base64-encoded image or null
+    val imagePath: String? // Base64-encoded image or null
 )
 data class Category(
-    val name: String,
-    val items: List<Product>
+    val category: String,
+    //val items: List<Product>
 )

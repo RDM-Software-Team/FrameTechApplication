@@ -9,6 +9,7 @@ import com.example.frametech_app.Data.Product
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -24,9 +25,13 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
     private val cartCache = mutableMapOf<Int, List<CartItem>>() // Cache for cart items
     // Products tracking
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
-    val categories: StateFlow<List<Category>> get() = _categories
+    val categories: StateFlow<List<Category>>  = _categories.asStateFlow()
+    private val _products = MutableStateFlow<List<Product>>(emptyList())
+    val products: StateFlow<List<Product>> = _products.asStateFlow()
 
-
+    //Errors tracking
+    private val _error = MutableStateFlow<String?>(null)
+    var error: StateFlow<String?> = _error.asStateFlow()
 
 
     fun login(email: String, password: String, onLoginSuccess: () -> Unit, onError: (String) -> Unit) {
@@ -138,7 +143,7 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
     fun deleteCartItem(cartItemId: Int, onError: (String) -> Unit) {
         val token = sessionManager.getToken()
         if (token != null) {
-            networkManager.deleteCartItem(token, cartItemId, {
+            networkManager.removeFromCart(token, cartItemId, {
                 cartItems.value = cartItems.value.filter { it.itemId != cartItemId }
                 cartMessage.value = "Item deleted"
                 invalidateCache()
@@ -150,40 +155,60 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
             onError("User is not logged in.")
         }
     }
-    fun fetchProducts(
-        category: String = "",
-        page: Int = 1,
-        limit: Int = 10,
-        onError: (String) -> Unit
-    ) {
+    fun fetchCategories() {
         viewModelScope.launch {
-            val token = sessionManager.getToken()
-            if (token != null) {
-                networkManager.fetchProducts(
-                    token = token,
-                    category = category,
-                    page = page,
-                    limit = limit,
-                    onSuccess = { fetchedProducts, _ ->
-                        val categoriesMap = mutableMapOf<String, MutableList<Product>>()
-                        fetchedProducts.forEach { product ->
-                            val cat = product.category
-                            if (cat !in categoriesMap) {
-                                categoriesMap[cat] = mutableListOf()
-                            }
-                            categoriesMap[cat]?.add(product)
-                        }
-                        _categories.value = categoriesMap.map { (cat, items) ->
-                            Category(name = cat, items = items)
-                        }
-                    },
-                    onError = onError
-                )
-            } else {
-                onError("User is not logged in.")
+            isLoading.value = true
+            _error.value = null
+
+            val result = networkManager.fetchCategories()
+            result.onSuccess { fetchedCategories ->
+                _categories.value = fetchedCategories
+            }.onFailure { e ->
+                _error.value = "Failed to fetch categories: ${e.message}"
             }
+
+            isLoading.value = false
         }
     }
+
+    fun fetchProducts(category: String, refresh: Boolean = false, page: Int = 1) {
+        // If refresh is true, reset to initial state
+        if (refresh) {
+            _products.value = emptyList() // Clear current products
+            morePagesAvailable.value = true // Reset page availability
+        }
+
+        // Check if more pages are available
+        if (!morePagesAvailable.value) return
+
+        val token = sessionManager.getToken()
+        if (token.isNullOrEmpty()) {
+            _error.value = "User not logged in"
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true // Start loading state
+            _error.value = null // Clear any existing errors
+
+            // Fetch products using the given category and page number
+            val result = networkManager.fetchProducts(token, category, page, PRODUCTS_PER_PAGE)
+            result.onSuccess { (fetchedProducts, morePages) ->
+                _products.value = _products.value + fetchedProducts // Append new products to the existing list
+                morePagesAvailable.value = morePages // Update availability of more pages
+
+                // Update the current page if more products exist
+                if (morePages) {
+                    currentPage = page + 1
+                }
+            }.onFailure { e ->
+                _error.value = "Failed to fetch products: ${e.message}"
+            }
+
+            _isLoading.value = false // End loading state
+        }
+    }
+
 
     fun resetCartPagination() {
         currentPage = 1
@@ -207,5 +232,8 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
             _isLoading.value = false
             onLogout()
         }
+    }
+    companion object {
+        private const val PRODUCTS_PER_PAGE = 10
     }
 }

@@ -51,10 +51,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            //val session = SessionManager(context = ComponentActivity())
             AppNav()
         }
     }
 }
+
 @Composable
 fun AppNav(viewModelFactory: SessionViewModelFactory = SessionViewModelFactory(SessionManager(context = LocalContext.current))
 ){
@@ -88,7 +90,7 @@ fun AppNav(viewModelFactory: SessionViewModelFactory = SessionViewModelFactory(S
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeBase(viewModelFactory: SessionViewModelFactory = SessionViewModelFactory(SessionManager(context = LocalContext.current))){
+fun HomeBase(viewModelFactory: SessionViewModelFactory = SessionViewModelFactory(SessionManager(context =  LocalContext.current))){
     val navController = rememberNavController()
     val sessionViewModel: SessionViewModel = viewModel(factory = viewModelFactory)
 

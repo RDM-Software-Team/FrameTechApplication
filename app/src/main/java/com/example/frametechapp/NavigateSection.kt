@@ -66,26 +66,7 @@ fun TopNavBar(navController: NavController){
             }
         )
 
-        NavigationBarItem(
-            selected = selectedRoute == "menu",
-            label = { Text(text = "Menu") },
-            onClick = {
-                navController.navigate("menu") {
-                    launchSingleTop = true
-                    restoreState = true
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
-                    }
-                }
-                selectedRoute = "menu"
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = null
-                )
-            }
-        )
+
 
         NavigationBarItem(
             selected = selectedRoute == "cart",
