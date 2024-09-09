@@ -213,6 +213,8 @@ class NetworkManager {
             override fun onFailure(call: Call, e: IOException) {
                 Handler(Looper.getMainLooper()).post {
                     onError("Network Error: ${e.message}")
+                    Log.d("Network Error: ", "${ e.message }")
+
                 }
             }
 
@@ -226,8 +228,11 @@ class NetworkManager {
                     Handler(Looper.getMainLooper()).post {
                         if (response.isSuccessful) {
                             onSuccess(errorMessage)
+                            Log.d("Successful: ",errorMessage)
                         } else {
                             onError(errorMessage)
+                            Log.d("Failed: ",errorMessage)
+
                         }
                     }
                 }
@@ -263,6 +268,7 @@ class NetworkManager {
                     if (!response.isSuccessful) {
                         Handler(Looper.getMainLooper()).post {
                             onError("Unexpected Error: ${response.message}")
+                            Log.d("Unexpected Error: ", response.message)
                         }
                         return
                     }
@@ -278,18 +284,23 @@ class NetworkManager {
                                 val item = itemsArray.getJSONObject(i)
                                 val cartItem = CartItem(
                                     itemId = item.getInt("item_id"),
-                                    itemName = item.getString("item_name"),
-                                    itemPrice = item.getDouble("item_price"),
-                                    quantity = item.getInt("quantity")
+                                    productId = item.getInt("product_id"),
+                                    quantity = item.getInt("quantity"),
+                                    cartId = item.getInt("cart_id"),
+                                    cartCreated = item.getString("cart_created"),
+                                    status = item.getString("status")
                                 )
                                 cartItems.add(cartItem)
+                                Log.d("Saved items: ", "$cartItem")
                             }
                             Handler(Looper.getMainLooper()).post {
                                 onSuccess(cartItems, morePages)
+                                Log.d("Successful items and pages: ", "$cartItems, $morePages")
                             }
                         } catch (e: Exception) {
                             Handler(Looper.getMainLooper()).post {
                                 onError("Parsing Error: ${e.message}")
+                                Log.e("Parsing Error: ", "${e.message}")
                             }
                         }
                     } else {
@@ -301,7 +312,6 @@ class NetworkManager {
             }
         })
     }
-
     fun updateCartItem(
         token: String,
         cartItemId: Int,

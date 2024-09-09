@@ -109,7 +109,7 @@ fun CartItemRow(item: CartItem, sessionViewModel: SessionViewModel) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text(text = "Delete Item") },
-            text = { Text(text = "Are you sure you want to delete ${item.itemName}?") },
+            text = { Text(text = "Are you sure you want to delete ${item.itemId}?") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -140,7 +140,7 @@ fun CartItemRow(item: CartItem, sessionViewModel: SessionViewModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = item.itemName,
+            text = item.itemId.toString(),
             modifier = Modifier
                 .border(1.dp, Color.Black)
                 .width(80.dp)
@@ -163,14 +163,14 @@ fun CartItemRow(item: CartItem, sessionViewModel: SessionViewModel) {
             textStyle = TextStyle(fontSize = 12.sp)
         )
         Text(
-            text = "R." + item.itemPrice.toString(),
+            text = "R." + item.itemId.toString(),
             modifier = Modifier
                 .border(1.dp, Color.Black)
                 .width(80.dp)
                 .fillMaxHeight()
         )
         Text(
-            text = "R." + (item.itemPrice * quantity).toString(),
+            text = "R." + (item.productId * quantity).toString(),
             modifier = Modifier
                 .border(1.dp, Color.Black)
                 .width(80.dp)

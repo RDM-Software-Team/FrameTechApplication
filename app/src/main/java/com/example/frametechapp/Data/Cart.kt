@@ -12,7 +12,9 @@ data class Cart(
 )
 data class CartItem(
     val itemId: Int,
-    val itemName: String,
-    val itemPrice: Double,
-    val quantity: Int
+    val productId: Int,
+    val quantity: Int,
+    val cartId: Int,
+    val cartCreated: String,
+    val status: String
 )
