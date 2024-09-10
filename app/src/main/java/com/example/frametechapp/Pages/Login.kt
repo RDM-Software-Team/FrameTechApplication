@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,22 +38,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.frametechapp.Controller.SessionViewModel
 import com.example.frametechapp.R
 
 @Composable
-fun Login(sessionViewModel: SessionViewModel,
-          onLoginSuccess: () -> Unit,
-          onForgot: ()-> Unit,
-          onCreate: () ->Unit
-          ){
-    var email by remember {
-        mutableStateOf("")
-    }
-    var password by remember {
-        mutableStateOf("")
-    }
+fun Login(
+    sessionViewModel: SessionViewModel,
+    onLoginSuccess: (String) -> Unit,
+    onForgot: () -> Unit,
+    onCreate: () -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val isLoading by sessionViewModel.isLoading
@@ -65,19 +62,23 @@ fun Login(sessionViewModel: SessionViewModel,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Computer Complex", modifier = Modifier.padding(top = 20.dp))
+
+        // Email input
         Row(
             modifier = Modifier.border(2.dp, Color.LightGray),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(painter = painterResource(R.drawable.default_person), contentDescription = null,modifier= Modifier.width(50.dp))
+            Icon(painter = painterResource(R.drawable.default_person), contentDescription = null, modifier = Modifier.width(50.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 placeholder = { Text(text = "enter email/username") }
-            )//Email||Username
+            )
         }
 
         Spacer(modifier = Modifier.padding(15.dp))
+
+        // Password input
         Row(
             modifier = Modifier.border(2.dp, Color.LightGray),
             verticalAlignment = Alignment.CenterVertically,
@@ -85,8 +86,7 @@ fun Login(sessionViewModel: SessionViewModel,
             Icon(
                 painter = painterResource(R.drawable.default_password),
                 contentDescription = null,
-
-                modifier= Modifier
+                modifier = Modifier
                     .width(38.dp)
                     .padding(start = 10.dp)
             )
@@ -96,43 +96,55 @@ fun Login(sessionViewModel: SessionViewModel,
                 placeholder = { Text(text = "enter password") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.padding(start = 12.dp)
-            )//password
+            )
         }
+
         AnimatedVisibility(
             visible = !isLoading,
             enter = fadeIn(),
             exit = fadeOut()
-        ){
-
-            OutlinedButton(onClick = {
-                sessionViewModel.login(email, password, onLoginSuccess) { error ->
-                    errorMessage = error
-                }
-                //navController.navigate("homeBase")
-            },
+        ) {
+            OutlinedButton(
+                onClick = {
+                    sessionViewModel.login(email, password,
+                        onLoginSuccess = { token ->
+                            onLoginSuccess(token.toString())
+                        },
+                        onError = { error ->
+                            errorMessage = error
+                        }
+                    )
+                },
                 shape = RectangleShape,
                 border = BorderStroke(0.dp, Color.Transparent),
-                colors = ButtonColors(containerColor = Color.Yellow, contentColor = Color.Black, disabledContentColor = Color.Black, disabledContainerColor = Color.LightGray),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.Yellow,
+                    contentColor = Color.Black,
+                    disabledContentColor = Color.Black,
+                    disabledContainerColor = Color.LightGray
+                ),
                 modifier = Modifier.padding(top = 15.dp)
             ) {
                 Text(text = "Login")
             }
         }
+
         Spacer(modifier = Modifier.height(8.dp))
         errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Forgot password button
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.End
         ) {
             Button(
-                onClick = {
-                    onForgot()
-                    //navController.navigate("forgotPassword")
-                },
+                onClick = onForgot,
                 shape = RectangleShape,
-                colors = ButtonColors(containerColor = Color.Gray, contentColor = Color.LightGray , disabledContentColor = Color.Transparent, disabledContainerColor = Color.Transparent),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Gray,
+                    contentColor = Color.LightGray
+                ),
                 modifier = Modifier
                     .padding(end = 20.dp)
                     .border(0.dp, Color.Transparent)
@@ -140,22 +152,24 @@ fun Login(sessionViewModel: SessionViewModel,
                 Text(text = "Forgot password?", textDecoration = TextDecoration.Underline)
             }
         }
+
         HorizontalDivider(
             modifier = Modifier
                 .padding(10.dp)
                 .background(Color.Gray)
                 .fillMaxWidth()
         )
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+
+        // Create account section
+        Row(modifier = Modifier.fillMaxWidth()) {
             Text(text = "Don't have an account: ", color = Color.Gray)
-            Button(onClick = {
-                onCreate()
-                //navController.navigate("registration")
-            },
-                colors = ButtonColors(containerColor = Color.Transparent, contentColor = Color.LightGray, disabledContentColor = Color.Black, disabledContainerColor = Color.Transparent)
-                , modifier = Modifier
+            Button(
+                onClick = onCreate,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.LightGray
+                ),
+                modifier = Modifier
                     .width(150.dp)
                     .height(40.dp)
             ) {
@@ -172,6 +186,5 @@ fun Login(sessionViewModel: SessionViewModel,
         ) {
             CircularProgressIndicator()
         }
-
     }
 }
