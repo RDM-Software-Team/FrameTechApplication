@@ -9,6 +9,7 @@ import android.util.Log
 import com.example.frame_tech_app.Data.CartItem
 import com.example.frametech_app.Data.Category
 import com.example.frametech_app.Data.Product
+import com.example.frametechapp.IPConfigurer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -26,9 +27,10 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class NetworkManager {
+    val ipaddress = IPConfigurer()
+
     private val  baseUrl ="http://192.168.18.113/computer_Complex_mobile"
     private val client = OkHttpClient()
-
     fun login(email: String, password: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         val formBody = FormBody.Builder()
             .add("email", email)
@@ -143,7 +145,58 @@ class NetworkManager {
             }
         })
     }
+    fun refreshToken(token: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        val formBody = FormBody.Builder()
+            .add("token", token)
+            .build()
 
+        val request = Request.Builder()
+            .url("$baseUrl/refresh_token.php")
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Handler(Looper.getMainLooper()).post {
+                    onError("Network Error: ${e.message}")
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    val responseBody = response.body?.string()
+                    if (response.isSuccessful) {
+                        try {
+                            val json = JSONObject(responseBody ?: "")
+                            if (json.has("token")) {
+                                Handler(Looper.getMainLooper()).post {
+                                    onSuccess(json.getString("token"))
+                                }
+                            } else {
+                                Handler(Looper.getMainLooper()).post {
+                                    onError(json.getString("message"))
+                                }
+                            }
+                        } catch (e: JSONException) {
+                            Handler(Looper.getMainLooper()).post {
+                                onError("Response Error: ${e.message}")
+                            }
+                        }
+                    } else {
+                        val errorMessage = when (response.code) {
+                            400 -> "Bad Request: Check your input"
+                            401 -> "Unauthorized: Invalid token"
+                            500 -> "Server Error: Please try again later"
+                            else -> "Unexpected Error: ${response.message}"
+                        }
+                        Handler(Looper.getMainLooper()).post {
+                            onError(errorMessage)
+                        }
+                    }
+                }
+            }
+        })
+    }
     fun refreshSession(token: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         val formBody = FormBody.Builder()
             .add("token", token)

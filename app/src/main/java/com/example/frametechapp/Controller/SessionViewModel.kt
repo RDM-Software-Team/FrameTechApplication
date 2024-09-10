@@ -7,9 +7,12 @@ import com.example.frame_tech_app.Data.CartItem
 import com.example.frametech_app.Data.Category
 import com.example.frametech_app.Data.Product
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -28,19 +31,25 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
     val categories: StateFlow<List<Category>>  = _categories.asStateFlow()
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
-
+    //handling the session token
+    private val _sessionState = MutableStateFlow<SessionState>(SessionState.Idle)
+    val sessionState: StateFlow<SessionState> = _sessionState
+    private var currentToken: String? = null
+    private var refreshJob: Job? = null
     //Errors tracking
     private val _error = MutableStateFlow<String?>(null)
     var error: StateFlow<String?> = _error.asStateFlow()
 
 
-    fun login(email: String, password: String, onLoginSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun login(email: String, password: String, onLoginSuccess: (String) -> Unit, onError: (String) -> Unit) {
         _isLoading.value = true
         viewModelScope.launch {
             networkManager.login(email, password, { token ->
                 _isLoading.value = false
                 sessionManager.saveToken(token)
-                onLoginSuccess()
+                onLoginSuccess(
+                    currentToken.toString()
+                )
             }, { error ->
                 _isLoading.value = false
                 onError(error)
@@ -236,4 +245,49 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
     companion object {
         private const val PRODUCTS_PER_PAGE = 10
     }
+
+    fun startTokenRefreshProcess(initialToken: String) {
+        currentToken = initialToken
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
+            while (isActive) {
+                delay(5 * 60 * 1000) // Wait for 5 minutes
+                refreshToken()
+            }
+        }
+    }
+
+    private suspend fun refreshToken() {
+        currentToken?.let { token ->
+            _sessionState.value = SessionState.Refreshing
+            networkManager.refreshToken(
+                token = token,
+                onSuccess = { newToken ->
+                    currentToken = newToken
+                    _sessionState.value = SessionState.Active(newToken)
+                },
+                onError = { errorMessage ->
+                    _sessionState.value = SessionState.Error(errorMessage)
+                    refreshJob?.cancel()
+                }
+            )
+        }
+    }
+
+    fun stopTokenRefreshProcess() {
+        refreshJob?.cancel()
+        _sessionState.value = SessionState.Idle
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        refreshJob?.cancel()
+    }
+}
+
+sealed class SessionState {
+    object Idle : SessionState()
+    object Refreshing : SessionState()
+    data class Active(val token: String) : SessionState()
+    data class Error(val message: String) : SessionState()
 }
