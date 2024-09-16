@@ -1,11 +1,15 @@
 package com.example.frametechapp.Controller
 
+import android.content.Context
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.frame_tech_app.Data.CartItem
 import com.example.frametech_app.Data.Category
 import com.example.frametech_app.Data.Product
+import com.example.frametechapp.Data.RepairRequest
+import com.example.frametechapp.Data.SellListing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,13 +20,19 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SessionViewModel(private val sessionManager: SessionManager, private val networkManager: NetworkManager) : ViewModel() {
+class SessionViewModel(private val sessionManager: SessionManager, private val networkManager: NetworkManager,    private val context: Context
+) : ViewModel() {
+
     //State to track loading
     private val _isLoading = mutableStateOf(false)
     val isLoading = _isLoading
     //Cart tracking
-    val cartMessage = mutableStateOf<String?>(null)
-    val cartItems = mutableStateOf<List<CartItem>>(emptyList())
+    private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
+    val cartItems: StateFlow<List<CartItem>> = _cartItems
+
+    private val _cartMessage = MutableStateFlow<String?>(null)
+    val cartMessage: StateFlow<String?> = _cartMessage
+
     private var currentPage = 1
     var morePagesAvailable = mutableStateOf(true)
     private val cartCache = mutableMapOf<Int, List<CartItem>>() // Cache for cart items
@@ -34,7 +44,7 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
     //handling the session token
     private val _sessionState = MutableStateFlow<SessionState>(SessionState.Idle)
     val sessionState: StateFlow<SessionState> = _sessionState
-    private var currentToken: String? = null
+     var currentToken: String? = null
     private var refreshJob: Job? = null
     //Errors tracking
     private val _error = MutableStateFlow<String?>(null)
@@ -85,10 +95,10 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
         val token = sessionManager.getToken()
         if (token != null) {
             networkManager.addToCart(token, productId, quantity, {
-                cartMessage.value = it
+                _cartMessage.value = it
                 onSuccess()
             }, { error ->
-                cartMessage.value = error
+                _cartMessage.value = error
                 onError(error)
             })
         } else {
@@ -102,29 +112,28 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
                 val cachedItems = cartCache[currentPage]
                 if (cachedItems != null) {
                     // Use cached data
-                    cartItems.value = cartItems.value + cachedItems
+                    _cartItems.value = cartItems.value + cachedItems
                     currentPage++
                 } else {
                     // Fetch from network
-                    networkManager.fetchCartItems(token, currentPage,
-                        { items, morePages ->
+                    networkManager.fetchCartItems(token, currentPage) { result ->
+                        result.onSuccess { response ->
                             viewModelScope.launch {
                                 // Update UI on the main thread
-                                cartItems.value = cartItems.value + items
-                                cartCache[currentPage] = items // Cache the result
-                                morePagesAvailable.value = morePages
+                                _cartItems.value = cartItems.value + response.items
+                                cartCache[currentPage] = response.items // Cache the result
+                                morePagesAvailable.value = response.morePages
                                 currentPage++
                             }
-                        },
-                        { error ->
+                        }.onFailure { error ->
                             viewModelScope.launch {
                                 // Show error on the main thread
                                 withContext(Dispatchers.Main) {
-                                    onError(error)
+                                    onError(error.message ?: "An unknown error occurred")
                                 }
                             }
                         }
-                    )
+                    }
                 }
             } else {
                 withContext(Dispatchers.Main) {
@@ -141,7 +150,7 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
                 invalidateCache()
                 fetchCartItems(onError) // Refresh the cart after update
             }, { error ->
-                cartMessage.value = error
+                _cartMessage.value = error
                 onError(error)
             })
         } else {
@@ -149,19 +158,23 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
         }
     }
 
-    fun deleteCartItem(cartItemId: Int, onError: (String) -> Unit) {
-        val token = sessionManager.getToken()
-        if (token != null) {
-            networkManager.removeFromCart(token, cartItemId, {
-                cartItems.value = cartItems.value.filter { it.itemId != cartItemId }
-                cartMessage.value = "Item deleted"
-                invalidateCache()
-            }, { error ->
-                cartMessage.value = error
-                onError(error)
-            })
-        } else {
-            onError("User is not logged in.")
+    fun deleteCartItem(cartItemId: Int) {
+        viewModelScope.launch {
+            val token = sessionManager.getToken()
+            if (token != null) {
+                when (val result = networkManager.removeFromCart(token, cartItemId)) {
+                    is NetworkResult.Success -> {
+                        _cartItems.value = cartItems.value.filter { it.itemId != cartItemId }
+                        _cartMessage.value = result.data
+                        invalidateCache()
+                    }
+                    is NetworkResult.Error -> {
+                        _cartMessage.value = result.message
+                    }
+                }
+            } else {
+                _cartMessage.value = "User is not logged in."
+            }
         }
     }
     fun fetchCategories() {
@@ -203,7 +216,7 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
             // Fetch products using the given category and page number
             val result = networkManager.fetchProducts(token, category, page, PRODUCTS_PER_PAGE)
             result.onSuccess { (fetchedProducts, morePages) ->
-                _products.value = _products.value + fetchedProducts // Append new products to the existing list
+                _products.value += fetchedProducts // Append new products to the existing list
                 morePagesAvailable.value = morePages // Update availability of more pages
 
                 // Update the current page if more products exist
@@ -217,11 +230,20 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
             _isLoading.value = false // End loading state
         }
     }
+    // Set the cart message
+    fun setCartMessage(message: String) {
+        _cartMessage.value = message
+    }
+
+    // Clear the cart message once displayed
+    fun clearCartMessage() {
+        _cartMessage.value = null
+    }
 
 
     fun resetCartPagination() {
         currentPage = 1
-        cartItems.value = emptyList()
+        _cartItems.value = emptyList()
         morePagesAvailable.value = true
     }
 
@@ -248,32 +270,69 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
 
     fun startTokenRefreshProcess(initialToken: String) {
         currentToken = initialToken
-        refreshJob?.cancel()
+        refreshJob?.cancel() // Cancel any ongoing refresh jobs
+
         refreshJob = viewModelScope.launch {
             while (isActive) {
                 delay(5 * 60 * 1000) // Wait for 5 minutes
-                refreshToken()
+                refreshToken() // Refresh the token
             }
         }
     }
 
-    private suspend fun refreshToken() {
+    // Refresh token function with retry logic
+    private fun refreshToken() {
         currentToken?.let { token ->
             _sessionState.value = SessionState.Refreshing
+
             networkManager.refreshToken(
                 token = token,
                 onSuccess = { newToken ->
                     currentToken = newToken
+                    sessionManager.saveToken(newToken) // Save the new token
                     _sessionState.value = SessionState.Active(newToken)
                 },
                 onError = { errorMessage ->
                     _sessionState.value = SessionState.Error(errorMessage)
-                    refreshJob?.cancel()
+
+                    // Retry refresh after delay if token failed to refresh
+                    viewModelScope.launch {
+                        delay(30 * 1000) // Retry after 30 seconds
+                        refreshToken() // Retry the token refresh
+                    }
+                    logoutAndRedirect()  // Log user out and redirect on token refresh failure
+
                 }
             )
         }
     }
 
+    // Logout and clear session
+    fun logoutAndRedirect() {
+        viewModelScope.launch {
+            sessionManager.clearSession()
+            _sessionState.value = SessionState.Error("Session expired. Please log in again.")
+            stopTokenRefreshProcess()
+        }
+    }
+
+    // Verify session
+    fun verifySession(onSuccess: (Boolean) -> Unit, onError: (String) -> Unit) {
+        val token = sessionManager.getToken()
+        if (token != null) {
+            networkManager.verifySession(token, { isValid ->
+                if (isValid) {
+                    onSuccess(true)
+                } else {
+                    logoutAndRedirect()  // Logout and redirect if session is invalid
+                    onError("Session invalid or expired.")
+                }
+            }, onError)
+        } else {
+            logoutAndRedirect()
+            onError("User is not logged in.")
+        }
+    }
     fun stopTokenRefreshProcess() {
         refreshJob?.cancel()
         _sessionState.value = SessionState.Idle
@@ -282,6 +341,56 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
     override fun onCleared() {
         super.onCleared()
         refreshJob?.cancel()
+    }
+
+
+    // Request a repair
+    fun requestRepair(description: String, bookedDate: String, imageUri: Uri,
+         onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        val token = sessionManager.getToken()
+        if (token != null) {
+            networkManager.requestRepair(
+                context,
+                token,
+                description,
+                bookedDate,
+                imageUri,
+                onSuccess,
+                onError
+            )
+        } else {
+            onError("User is not logged in.")
+        }
+    }
+
+    // Sell items
+    fun sellItems(description: String, price: String, imagePaths: List<Uri>, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        val token = sessionManager.getToken()
+        if (token != null) {
+            networkManager.sellItems(context = context,token, description, price, imagePaths, onSuccess, onError)
+        } else {
+            onError("User is not logged in.")
+        }
+    }
+
+    // View repair requests
+    fun viewRepairRequests(onSuccess: (List<RepairRequest>) -> Unit, onError: (String) -> Unit) {
+        val token = sessionManager.getToken()
+        if (token != null) {
+            networkManager.viewRepairRequests(token, onSuccess, onError)
+        } else {
+            onError("User is not logged in.")
+        }
+    }
+
+    // View sell listings
+    fun viewSellListings(onSuccess: (List<SellListing>) -> Unit, onError: (String) -> Unit) {
+        val token = sessionManager.getToken()
+        if (token != null) {
+            networkManager.viewSellListings(token, onSuccess, onError)
+        } else {
+            onError("User is not logged in.")
+        }
     }
 }
 
