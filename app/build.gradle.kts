@@ -50,6 +50,11 @@ android {
 }
 
 dependencies {
+    //Payment getways
+    implementation("com.stripe:stripe-android:20.48.1")
+    implementation("com.paypal.sdk:paypal-android-sdk:2.15.3")
+    implementation("com.google.android.gms:play-services-wallet:19.3.0")
+
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
     implementation ("com.google.code.gson:gson:2.8.8")
