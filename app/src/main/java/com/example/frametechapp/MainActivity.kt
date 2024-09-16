@@ -9,28 +9,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.frametechapp.Pages.Cart
-import com.example.frametechapp.Pages.Homepage
-import com.example.frametechapp.Pages.Profile
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.frame_tech_app.Pages.Login
 import com.example.frame_tech_app.Pages.Registration
 import com.example.frametechapp.Controller.NetworkManager
@@ -39,21 +34,27 @@ import com.example.frametechapp.Controller.SessionState
 import com.example.frametechapp.Controller.SessionViewModel
 import com.example.frametechapp.Controller.UserAccessClass
 import com.example.frametechapp.Pages.About
+import com.example.frametechapp.Pages.Cart
+import com.example.frametechapp.Pages.CheckoutScreen
+import com.example.frametechapp.Pages.Homepage
 import com.example.frametechapp.Pages.Logout
+import com.example.frametechapp.Pages.PaymentScreen
 import com.example.frametechapp.Pages.ProductPage
+import com.example.frametechapp.Pages.Profile
 import com.example.frametechapp.Pages.SellingPage
 import com.example.frametechapp.Pages.ServicePage
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var sessionViewModel: SessionViewModel
-    private  lateinit var sessionManager: SessionManager;
+    private lateinit var sessionManager: SessionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val networkManager = NetworkManager()
         sessionManager = SessionManager(this)
-        sessionViewModel = SessionViewModel(sessionManager, networkManager)
+        sessionViewModel = SessionViewModel(sessionManager, networkManager, this)
 
         setContent {
             AppNav(sessionViewModel)
@@ -62,19 +63,27 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Start the token refresh process when the app resumes
+        // Start token refresh process when the app resumes
         lifecycleScope.launch {
             val storedToken = sessionManager.getToken()
             if (storedToken != null) {
                 sessionViewModel.startTokenRefreshProcess(storedToken)
+            } else {
+                sessionViewModel.stopTokenRefreshProcess()
+                navigateToLogin()  // Redirect to login if no token
             }
         }
     }
 
     override fun onPause() {
         super.onPause()
-        // Stop the token refresh process when the app is paused
+        // Stop token refresh process when the app is paused
         sessionViewModel.stopTokenRefreshProcess()
+    }
+
+    private fun navigateToLogin() {
+        // Logic to navigate to the login screen
+        sessionViewModel.logoutAndRedirect()
     }
 }
 
@@ -86,13 +95,17 @@ fun AppNav(sessionViewModel: SessionViewModel) {
 
     LaunchedEffect(sessionState) {
         when (sessionState) {
+
             is SessionState.Error -> {
-                // Handle error, e.g., navigate to login screen
+                // Handle error, e.g., show an error message and navigate to login
+                // You might want to pass the error message to the login screen
                 navController.navigate("login") {
                     popUpTo("login") { inclusive = true }
                 }
+                sessionViewModel.currentToken?.let { sessionViewModel.startTokenRefreshProcess(it) }
+
             }
-            else -> {} // Do nothing for other states
+            else ->{}
         }
     }
 
@@ -101,7 +114,7 @@ fun AppNav(sessionViewModel: SessionViewModel) {
             Login(
                 sessionViewModel = sessionViewModel,
                 onLoginSuccess = { token ->
-                    sessionViewModel.startTokenRefreshProcess(token.toString())
+                    sessionViewModel.startTokenRefreshProcess(token)
                     navController.navigate("homeBase")
                 },
                 onCreate = { navController.navigate("registration") },
@@ -161,7 +174,7 @@ fun HomeBase(sessionViewModel: SessionViewModel) {
                         Homepage(sessionViewModel)
                     }
                     composable("cart") {
-                        Cart(sessionViewModel)
+                        Cart(sessionViewModel,navController)
                     }
                     composable("profile") {
                         Profile()
@@ -173,10 +186,15 @@ fun HomeBase(sessionViewModel: SessionViewModel) {
                         About()
                     }
                     composable("servicePage") {
-                        ServicePage()
+                        ServicePage(sessionViewModel)
                     }
                     composable("sellingPage") {
-                        SellingPage()
+                        SellingPage(sessionViewModel)
+                    }
+                    composable("checkout"){
+                        //CheckoutScreen(navController = navController)
+                        PaymentScreen()
+
                     }
                     composable("logout") {
                         Logout(
