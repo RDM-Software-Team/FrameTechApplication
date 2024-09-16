@@ -16,5 +16,9 @@ data class CartItem(
     val quantity: Int,
     val cartId: Int,
     val cartCreated: String,
-    val status: String
+    val status: String,
+    val productName: String,
+    val productImage: String? = null,
+    val productDescription: String? = null,
+    val productPrice: Double
 )
