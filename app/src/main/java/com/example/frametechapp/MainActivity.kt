@@ -55,7 +55,6 @@ class MainActivity : ComponentActivity() {
         val networkManager = NetworkManager()
         sessionManager = SessionManager(this)
         sessionViewModel = SessionViewModel(sessionManager, networkManager, this)
-
         setContent {
             AppNav(sessionViewModel)
         }
@@ -191,9 +190,11 @@ fun HomeBase(sessionViewModel: SessionViewModel) {
                     composable("sellingPage") {
                         SellingPage(sessionViewModel)
                     }
-                    composable("checkout"){
-                        //CheckoutScreen(navController = navController)
-                        PaymentScreen()
+                    composable("checkout/{orderId}/{totalPrice}"){ backStackEntry ->
+                            val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+                            val totalPrice = backStackEntry.arguments?.getString("totalPrice") ?: "0.0"
+                            PaymentScreen(orderId, totalPrice,sessionViewModel,navController)
+
 
                     }
                     composable("logout") {
