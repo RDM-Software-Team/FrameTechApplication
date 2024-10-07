@@ -42,11 +42,9 @@ class PaymentViewModel : ViewModel() {
         _paymentMethods.value = listOf(
             PaymentMethod("Credit Card", R.drawable.credit_card),
             PaymentMethod("Debit Card", R.drawable.debit_card),
-
             PaymentMethod("PayPal", R.drawable.ic_paypal),
             PaymentMethod("Google Pay", R.drawable.ic_google_pay),
             PaymentMethod("Bank Transfer", R.drawable.bank_transfer)
-
         )
     }
 
