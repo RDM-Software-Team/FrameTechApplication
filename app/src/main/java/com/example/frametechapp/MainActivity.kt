@@ -1,6 +1,7 @@
 package com.example.frametechapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -62,10 +63,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Start token refresh process when the app resumes
         lifecycleScope.launch {
             val storedToken = sessionManager.getToken()
             if (storedToken != null) {
+                Log.d("MainActivity", "Stored token: $storedToken")
                 sessionViewModel.startTokenRefreshProcess(storedToken)
             } else {
                 sessionViewModel.stopTokenRefreshProcess()
@@ -73,6 +74,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 
     override fun onPause() {
         super.onPause()

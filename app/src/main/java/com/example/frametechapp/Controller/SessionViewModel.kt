@@ -24,6 +24,11 @@ import kotlinx.coroutines.withContext
 class SessionViewModel(private val sessionManager: SessionManager, private val networkManager: NetworkManager,private val context: Context
 ) : ViewModel() {
 
+    //tracking the refreshing the token
+    private var retryCount = 0
+    private val maxRetries = 3
+
+
     //State to track loading
     private val _isLoading = mutableStateOf(false)
     val isLoading = _isLoading
@@ -344,20 +349,23 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
             networkManager.refreshToken(
                 token = token,
                 onSuccess = { newToken ->
+                    retryCount = 0 // Reset retry count on success
                     currentToken = newToken
-                    sessionManager.saveToken(newToken) // Save the new token
+                    sessionManager.saveToken(newToken) // Save new token
                     _sessionState.value = SessionState.Active(newToken)
                 },
                 onError = { errorMessage ->
+                    retryCount++
                     _sessionState.value = SessionState.Error(errorMessage)
 
-                    // Retry refresh after delay if token failed to refresh
-                    viewModelScope.launch {
-                        delay(30 * 1000) // Retry after 30 seconds
-                        refreshToken() // Retry the token refresh
+                    if (retryCount <= maxRetries) {
+                        viewModelScope.launch {
+                            delay(30 * 1000) // Retry after 30 seconds
+                            refreshToken() // Retry token refresh
+                        }
+                    } else {
+                        logoutAndRedirect()  // Log user out and redirect after max retries
                     }
-                    logoutAndRedirect()  // Log user out and redirect on token refresh failure
-
                 }
             )
         }
@@ -390,9 +398,10 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
         }
     }
     fun stopTokenRefreshProcess() {
-        refreshJob?.cancel()
-        _sessionState.value = SessionState.Idle
+        refreshJob?.cancel() // Cancel the token refresh job
+        refreshJob = null
     }
+
 
     override fun onCleared() {
         super.onCleared()
