@@ -781,15 +781,106 @@ suspend fun fetchCategories(): Result<List<Category>> = withContext(Dispatchers.
 
         return cartItems
     }
-    //reading Longblob image
-    fun decodeBase64ToBitmap(base64: String): Bitmap? {
-        return try {
-            val decodedString = Base64.decode(base64, Base64.DEFAULT)
-            BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+    fun createOrder(token: String, onSuccess: (String, Double) -> Unit, onError: (String) -> Unit) {
+        val formBody = FormBody.Builder()
+            .add("token", token)
+            .build()
+
+        val request = Request.Builder()
+            .url("$baseUrl/createOrder.php")  // Your API URL
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Handler(Looper.getMainLooper()).post {
+                    onError("Network Error: ${e.message}")
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    val responseBody = response.body?.string()
+                    if (response.isSuccessful && responseBody != null) {
+                        try {
+                            val json = JSONObject(responseBody)
+                            if (json.getBoolean("success")) {
+                                val orderId = json.getString("order_id")
+                                val totalPrice = json.getDouble("totalPrice")
+                                Handler(Looper.getMainLooper()).post {
+                                    onSuccess(orderId, totalPrice)
+                                }
+                            } else {
+                                Handler(Looper.getMainLooper()).post {
+                                    onError("Order creation failed: ${json.getString("message")}")
+                                }
+                            }
+                        } catch (e: JSONException) {
+                            Handler(Looper.getMainLooper()).post {
+                                onError("Invalid response format: ${e.message}\nResponse: $responseBody")
+                                Log.e("Invalid response format", "${e.message}\nResponse: $responseBody")
+                            }
+                        }
+                    } else {
+                        Handler(Looper.getMainLooper()).post {
+                            onError("Error: ${response.message}\nResponse: $responseBody")
+                            Log.e("Error", "${response.message}\nResponse: $responseBody")
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    fun processPayment(token: String, paymentType: String, orderId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val formBody = FormBody.Builder()
+            .add("token", token)
+            .add("payment_type", paymentType)
+            .add("order_id", orderId)
+            .build()
+
+        val request = Request.Builder()
+            .url("$baseUrl/processPayment.php")  // Your API URL
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Handler(Looper.getMainLooper()).post {
+                    onError("Network Error: ${e.message}")
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    val responseBody = response.body?.string()
+                    if (response.isSuccessful && responseBody != null) {
+                        try {
+                            val json = JSONObject(responseBody)
+                            if (json.getBoolean("success")) {
+                                Handler(Looper.getMainLooper()).post {
+                                    onSuccess()
+                                }
+                            } else {
+                                Handler(Looper.getMainLooper()).post {
+                                    onError("Payment processing failed: ${json.getString("message")}")
+                                }
+                            }
+                        } catch (e: JSONException) {
+                            Handler(Looper.getMainLooper()).post {
+                                onError("Invalid response format: ${e.message}\nResponse: $responseBody")
+                                Log.e("Invalid response format", "${e.message}\nResponse: $responseBody")
+                            }
+                        }
+                    } else {
+                        Handler(Looper.getMainLooper()).post {
+                            onError("Error: ${response.message}\nResponse: $responseBody")
+                            Log.e("Error", "${response.message}\nResponse: $responseBody")
+                        }
+                    }
+                }
+            }
+        })
     }
 }
 

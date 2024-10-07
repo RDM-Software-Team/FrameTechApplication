@@ -10,6 +10,7 @@ import com.example.frametech_app.Data.Category
 import com.example.frametech_app.Data.Product
 import com.example.frametechapp.Data.RepairRequest
 import com.example.frametechapp.Data.SellListing
+import com.example.frametechapp.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,7 +21,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SessionViewModel(private val sessionManager: SessionManager, private val networkManager: NetworkManager,    private val context: Context
+class SessionViewModel(private val sessionManager: SessionManager, private val networkManager: NetworkManager,private val context: Context
 ) : ViewModel() {
 
     //State to track loading
@@ -50,6 +51,29 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
     private val _error = MutableStateFlow<String?>(null)
     var error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _orderMessage = MutableStateFlow<String?>(null)
+    val orderMessage: StateFlow<String?> = _orderMessage
+
+    // Payment message tracking
+    private val _paymentMessage = MutableStateFlow<String?>(null)
+    val paymentMessage: StateFlow<String?> = _paymentMessage
+
+    private val _paymentMethods = MutableStateFlow<List<PaymentMethod>>(emptyList())
+    val paymentMethods: StateFlow<List<PaymentMethod>> = _paymentMethods
+
+    init {
+        fetchPaymentMethods()
+    }
+
+    private fun fetchPaymentMethods() {
+        _paymentMethods.value = listOf(
+            PaymentMethod("Credit Card", R.drawable.credit_card),
+            PaymentMethod("Debit Card", R.drawable.debit_card),
+            PaymentMethod("PayPal", R.drawable.ic_paypal),
+            PaymentMethod("Google Pay", R.drawable.ic_google_pay),
+            PaymentMethod("Bank Transfer", R.drawable.bank_transfer)
+        )
+    }
 
     fun login(email: String, password: String, onLoginSuccess: (String) -> Unit, onError: (String) -> Unit) {
         _isLoading.value = true
@@ -230,6 +254,38 @@ class SessionViewModel(private val sessionManager: SessionManager, private val n
             _isLoading.value = false // End loading state
         }
     }
+
+    fun createOrder(onSuccess: (String, Double) -> Unit, onError: (String) -> Unit) {
+        val token = sessionManager.getToken()  // Retrieve the user's token from session
+        if (token != null) {
+            networkManager.createOrder(token, { orderId, totalPrice ->
+                // Handle success: Update LiveData or any state as needed
+                _orderMessage.value = "Order created successfully: $orderId"
+                onSuccess(orderId, totalPrice)
+            }, { error ->
+                _orderMessage.value = error
+                onError(error)
+            })
+        } else {
+            onError("User is not logged in.")
+        }
+    }
+    fun processPayment(orderId: String, paymentType: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val token = sessionManager.getToken()  // Retrieve the user's token from session
+        if (token != null) {
+            networkManager.processPayment(token, paymentType, orderId, {
+                // Handle payment success
+                _paymentMessage.value = "Payment processed successfully for Order: $orderId"
+                onSuccess()
+            }, { error ->
+                _paymentMessage.value = error
+                onError(error)
+            })
+        } else {
+            onError("User is not logged in.")
+        }
+    }
+
     // Set the cart message
     fun setCartMessage(message: String) {
         _cartMessage.value = message
