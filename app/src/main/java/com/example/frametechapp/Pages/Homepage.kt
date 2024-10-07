@@ -2,6 +2,7 @@
 
 package com.example.frametechapp.Pages
 
+ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -128,7 +129,7 @@ fun Homepage(sessionViewModel: SessionViewModel) {
                                         // Load more products when clicked
                                         loadingMoreProducts.value = true
                                         sessionViewModel.fetchProducts(category.category) // Trigger fetching the next page of products
-                                        loadingMoreProducts.value = false
+                                        loadingMoreProducts.value = true
                                     }) {
                                         Text("Load More")
                                     }
@@ -159,7 +160,7 @@ fun MiniCard(product: Product, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = product.imagePath,
+                model = product.imagePath ?: "https://www.tiffincurry.ca/wp-content/uploads/2021/02/default-product.png",
                 contentDescription = product.pName,
                 modifier = Modifier
                     .size(80.dp)
@@ -185,7 +186,7 @@ fun MaxCard(product: Product, onClick: () -> Unit, onCancel: () -> Unit) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             AsyncImage(
-                model = product.imagePath,
+                model = product.imagePath ?: "https://www.tiffincurry.ca/wp-content/uploads/2021/02/default-product.png",
                 contentDescription = product.pName,
                 modifier = Modifier
                     .fillMaxWidth()
