@@ -1,6 +1,7 @@
+@file:Suppress("UNREACHABLE_CODE")
+
 package com.example.frametechapp.Pages
 
-import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,24 +9,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.stripe.android.paymentsheet.PaymentSheetResult
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,11 +34,8 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,18 +45,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.frame_tech_app.Data.CartItem
 import com.example.frametechapp.Controller.PaymentMethod
-import com.example.frametechapp.Controller.PaymentUiState
 import com.example.frametechapp.Controller.PaymentViewModel
 import com.example.frametechapp.Controller.SessionViewModel
-import com.stripe.android.paymentsheet.PaymentSheet
 
 @Composable
 fun Cart(sessionViewModel: SessionViewModel, navController: NavController) {
@@ -69,11 +61,19 @@ fun Cart(sessionViewModel: SessionViewModel, navController: NavController) {
     // Collect cartItems and cartMessage as StateFlows
     val cartItems by sessionViewModel.cartItems.collectAsState(emptyList())  // Default to empty list
     val cartMessage by sessionViewModel.cartMessage.collectAsState(null)    // Null if no message
+    val orderMessage by sessionViewModel.orderMessage.collectAsState(null)
+
     // Show the cart message as a Toast whenever it is not null
     cartMessage?.let {
         LaunchedEffect(it) {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             sessionViewModel.clearCartMessage()  // Optionally clear the message after showing it
+        }
+    }
+
+    orderMessage?.let {
+        LaunchedEffect(it) {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -161,7 +161,16 @@ fun Cart(sessionViewModel: SessionViewModel, navController: NavController) {
                 }
 
                 Button(
-                    onClick = { navController.navigate("checkout") },
+                    onClick = { //navController.navigate("checkout")
+                        sessionViewModel.createOrder(onSuccess = { orderId, totalPrice ->
+                            // Successfully created the order, navigate to the payment screen
+                            ///navController.navigate("payment_screen/$orderId/$totalPrice")
+                            navController.navigate("checkout/$orderId/$totalPrice")
+                        }, onError = { errorMessage ->
+                            // Show error message if order creation fails
+                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                        })
+                              },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp),
@@ -294,14 +303,19 @@ fun CheckoutScreen(navController: NavController) {
     }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PaymentScreen(viewModel: PaymentViewModel = PaymentViewModel()) {
+fun PaymentScreen(orderId: String, totalPrice: String,sessionViewModel: SessionViewModel,navController: NavController) {
     val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsState()
-    val paymentMethods by viewModel.paymentMethods.collectAsState()
+    val paymentMethods by sessionViewModel.paymentMethods.collectAsState()
 
-    var amount by remember { mutableStateOf("10.00") }
+    var amount by remember { mutableStateOf(totalPrice) }
     var currency by remember { mutableStateOf("USD") }
+    var selectedPaymentMethod by remember { mutableStateOf(paymentMethods.firstOrNull()?.name ?: "") }
+    var expanded by remember { mutableStateOf(false) }
+
+    // List of currencies to choose from
+    val currencyOptions = listOf("USD", "ZAR", "EUR", "GBP")
 
     LazyColumn(
         modifier = Modifier
@@ -328,24 +342,70 @@ fun PaymentScreen(viewModel: PaymentViewModel = PaymentViewModel()) {
         }
 
         item {
-            OutlinedTextField(
-                value = currency,
-                onValueChange = { currency = it },
-                label = { Text("Currency") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = currency,
+                    onValueChange = { },
+                    label = { Text("Currency") },
+                    trailingIcon = {
+                        Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    currencyOptions.forEach { option ->
+                        DropdownMenuItem(
+                            onClick = {
+                                currency = option
+                                expanded = false
+                            },
+                            text = { Text(option) },
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            Text("Select Payment Method")
         }
 
         items(paymentMethods) { method ->
-            PaymentMethodItem(method)
+            PaymentMethodItem(method) { selectedMethod ->
+                selectedPaymentMethod = selectedMethod
+            }
         }
 
         item {
             Button(
                 onClick = {
-                    viewModel.initiatePayment(amount.toDoubleOrNull() ?: 0.0, currency)
+                    // Ensure a valid payment method is selected
+                    if (selectedPaymentMethod.isNotEmpty()) {
+                        sessionViewModel.processPayment(
+                            orderId = orderId, // Create a unique order ID
+                            paymentType = selectedPaymentMethod,
+                            onSuccess = {
+                                Toast.makeText(context, "Payment Successful!", Toast.LENGTH_SHORT).show()
+                                navController.navigate("homepage")
+                            },
+                            onError = { errorMessage ->
+                                Toast.makeText(context, "Payment Failed: $errorMessage", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    } else {
+                        Toast.makeText(context, "Please select a payment method.", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -354,38 +414,16 @@ fun PaymentScreen(viewModel: PaymentViewModel = PaymentViewModel()) {
                 Text("Pay Now")
             }
         }
-
-        item {
-//            when (val state = uiState) {
-//                is PaymentUiState.Loading -> CircularProgressIndicator()
-//                is PaymentUiState.Error -> Text("Error: ${state.message}")
-//                is PaymentUiState.PaymentReady -> {
-//                    LaunchedEffect(state) {
-//                        val paymentSheet = PaymentSheet(context, ::onPaymentResult)
-//                        val paymentIntentClientSecret = state.clientSecret
-//                        paymentSheet.presentWithPaymentIntent(
-//                            paymentIntentClientSecret,
-//                            PaymentSheet.Configuration(
-//                                merchantDisplayName = "Your App Name",
-//                                customer = null,
-//                                allowsDelayedPaymentMethods = true
-//                            )
-//                        )
-//                    }
-//                }
-//                is PaymentUiState.PaymentSuccess -> Text("Payment Successful!")
-//                else -> {}
-//            }
-
-      }
     }
 }
+
 @Composable
-fun PaymentMethodItem(method: PaymentMethod) {
+fun PaymentMethodItem(method: PaymentMethod, onSelect: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { onSelect(method.name) }, // Call the onSelect callback to update selectedPaymentMethod
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
