@@ -77,7 +77,6 @@ fun MainFrame() {
 
  Column(
   modifier = Modifier
-   .verticalScroll(rememberScrollState(), enabled = true)
    .background(Color.White)
    .padding(horizontal = 16.dp)
  ) {
@@ -102,19 +101,13 @@ fun MainFrame() {
     modifier = Modifier
      .fillMaxWidth(0.7f)
      .height(56.dp),
-    shape = RoundedCornerShape(12.dp),
-    /*colors = androidx.compose.material3.TextFieldDefaults(
-     backgroundColor = Color(0xFFF5F5F5),
-     focusedIndicatorColor = Color.Transparent,
-     unfocusedIndicatorColor = Color.Transparent
-    )*/
+    shape = RoundedCornerShape(12.dp)
    )
 
    // Filter button
    Button(
     onClick = { isFilterOpen.value = !isFilterOpen.value },
     shape = RoundedCornerShape(12.dp),
-    //colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE), disabledContainerColor = Color(0xFF6200EE), contentColor = Color.White , disabledContentColor = Color(0xFF6200EE), backgroundColor = Color(0xFF6200EE)),
     modifier = Modifier.height(56.dp)
    ) {
     Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Filter Icon")
@@ -146,14 +139,12 @@ fun ProductView() {
   verticalArrangement = Arrangement.spacedBy(16.dp),
   horizontalArrangement = Arrangement.spacedBy(16.dp)
  ) {
-
-  items(products) {  product->
+  items(products) { product ->
    ProductCard(product)
-
-
   }
  }
 }
+
 
 @Composable
 fun ProductCard(product: Product) {
