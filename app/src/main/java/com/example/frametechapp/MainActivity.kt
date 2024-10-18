@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -132,13 +133,13 @@ fun AppNav(sessionViewModel: SessionViewModel) {
             verifyClass.ForgotPassword(navController = navController)
         }
         composable("homeBase") {
-            HomeBase(sessionViewModel = sessionViewModel)
+            HomeBase(sessionViewModel = sessionViewModel,navController)
         }
     }
 }
 
 @Composable
-fun HomeBase(sessionViewModel: SessionViewModel) {
+fun HomeBase(sessionViewModel: SessionViewModel,sideNav:NavController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
@@ -204,9 +205,15 @@ fun HomeBase(sessionViewModel: SessionViewModel) {
                             sessionViewModel = sessionViewModel,
                             onLogout = {
                                 sessionViewModel.stopTokenRefreshProcess()
-                                navController.navigate("login") {
+                                sideNav.navigate("login") {
                                     popUpTo("login") { inclusive = true }
                                 }
+                                sessionViewModel.currentToken?.let { it1 ->
+                                    sessionViewModel.startTokenRefreshProcess(
+                                        it1
+                                    )
+                                }
+
                             }
                         )
                     }
