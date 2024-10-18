@@ -3,6 +3,7 @@
 package com.example.frametechapp.Pages
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -433,5 +436,209 @@ fun PaymentMethodItem(method: PaymentMethod, onSelect: (String) -> Unit) {
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(method.name)
+    }
+    when(method.name){
+        "Credit Card"->  CreditCardDetails()
+        "Debit Card"-> DebitCardDetails()
+        "PayPal"-> PayPalDetails()
+        "Google Pay"-> GooglePayDetails()
+        "Bank Transfer"-> BankTransferDetails()
+    }
+}
+
+@Composable
+fun CreditCardDetails() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        TextField(
+            value = "",
+            onValueChange = { /* Handle card number change */ },
+            label = { Text("Card Number", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+//            TextFieldDefaults.textFieldColors(
+//                backgroundColor = Color.White,
+//                cursorColor = Color(0xFF6200EE),
+//                focusedIndicatorColor = Color(0xFF6200EE),
+//                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+//            )
+        )
+        TextField(
+            value = "",
+            onValueChange = { /* Handle card expiry change */ },
+            label = { Text("Expiry Date (MM/YY)", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+
+        )
+        TextField(
+            value = "",
+            onValueChange = { /* Handle CVV change */ },
+            label = { Text("CVV", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+//
+        )
+    }
+}
+
+@Composable
+fun DebitCardDetails() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        TextField(
+            value = "",
+            onValueChange = { /* Handle debit card number change */ },
+            label = { Text("Debit Card Number", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+//
+        )
+        TextField(
+            value = "",
+            onValueChange = { /* Handle debit card expiry date change */ },
+            label = { Text("Expiry Date (MM/YY)", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+//
+        )
+        TextField(
+            value = "",
+            onValueChange = { /* Handle CVV change */ },
+            label = { Text("CVV", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+//
+        )
+    }
+}
+
+@Composable
+fun PayPalDetails() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        TextField(
+            value = "",
+            onValueChange = { /* Handle PayPal email change */ },
+            label = { Text("PayPal Email", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+//
+        )
+    }
+}
+
+@Composable
+fun GooglePayDetails() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        Text(
+            "Google Pay Selected",
+            style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF616161)),
+            modifier = Modifier.padding(8.dp)
+        )
+        // Add more details if needed
+    }
+}
+
+@Composable
+fun BankTransferDetails() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        TextField(
+            value = "",
+            onValueChange = { /* Handle bank account number change */ },
+            label = { Text("Bank Account Number", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+//
+        )
+        TextField(
+            value = "",
+            onValueChange = { /* Handle bank routing number change */ },
+            label = { Text("Routing Number", color = Color(0xFF616161)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = TextFieldDefaults.colors(
+                cursorColor = Color(0xFF6200EE),
+                focusedIndicatorColor = Color(0xFF6200EE),
+                unfocusedIndicatorColor = Color(0xFFC5CAE9)
+            )
+//
+        )
     }
 }
