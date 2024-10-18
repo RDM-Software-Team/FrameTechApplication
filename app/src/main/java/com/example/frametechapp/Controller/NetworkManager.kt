@@ -69,23 +69,29 @@ class NetworkManager {
             }
 
             override fun onResponse(call: Call, response: Response) {
+                var token =""
                 response.use {
                     val responseBody = response.body?.string()
                     if (response.isSuccessful) {
                         try {
                             val json = JSONObject(responseBody ?: "")
+                            token = json.has("token").toString()
                             if (json.has("token")) {
                                 Handler(Looper.getMainLooper()).post {
                                     onSuccess(json.getString("token"))
                                 }
+                                token = json.getString("token")
                             } else {
                                 Handler(Looper.getMainLooper()).post {
                                     onError(json.getString("message"))
                                 }
+                                token =json.getString("message")
+
                             }
                         } catch (e: JSONException) {
                             Handler(Looper.getMainLooper()).post {
-                                onError("Response Error: ${e.message}")
+                                onError("Response Error: ${e.message}, token: $token")
+                                Log.e("Response Error:","${e.message}, token: $token")
                             }
                         }
                     } else {
